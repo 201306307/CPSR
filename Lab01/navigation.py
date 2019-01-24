@@ -39,7 +39,9 @@ class Navigation:
                 v = 2
         else:
             #CONTROL EN CURVA
-            if (measurements[16-1] > 0.99 and [1-1] > 0.99) or (measurements[8-1] < 0.5 and measurements[9-1] < 0.5):
+            if ((measurements[16-1] > measurements[8-1]) and (measurements[1-1] > measurements[8-1])) or\
+                    ((measurements[16-1] > measurements[9-1]) and (measurements[1-1] > measurements[9-1])
+                     and measurements[16-1] > 0.99 and measurements[1-1] > 0.99 and measurements[2-1] < 0.99 and measurements[15-1] > 0.99):
                 w = 0.25
                 v = 0
                 print("curva seguir pared giro hacia izq")
