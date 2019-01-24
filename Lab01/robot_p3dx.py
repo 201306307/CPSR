@@ -3,6 +3,9 @@ import vrep
 
 from robot import Robot
 from typing import Any, Dict, List, Tuple
+from vrep import *
+from vrepConst import *
+from numpy import *
 
 
 class RobotP3DX(Robot):
@@ -52,7 +55,10 @@ class RobotP3DX(Robot):
         """
         # TODO: Complete with your code.
 
-        pass
+        left_set = simxSetJointTargetVelocity(self._client_id, self._motors["left"], w, simx_opmode_oneshot)
+        right_set = simxSetJointTargetVelocity(self._client_id, self._motors["right"], w, simx_opmode_oneshot)
+
+        return (left_set, right_set)
 
     def sense(self) -> List[float]:
         """Read ultrasonic sensors.
@@ -70,9 +76,13 @@ class RobotP3DX(Robot):
         Returns: {'left': handle, 'right': handle}
 
         """
-        # TODO: Complete with your code.
+        rcleft, leftMotor = simxGetObjectHandle(self._client_id,"Pioneer_p3dx_leftMotor",simx_opmode_blocking) #Handle of the left motor
+        rcright, rightMotor = simxGetObjectHandle(self._client_id,"Pioneer_p3dx_rightMotor",simx_opmode_blocking) #Handle of the rightMotor
 
-        pass
+        motors = {"left": leftMotor,
+                "right": rightMotor}
+
+        return motors
 
     def _init_sensors(self) -> List[Any]:
         """Acquire sensor handles and initialize streaming.
