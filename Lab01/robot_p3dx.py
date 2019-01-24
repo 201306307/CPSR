@@ -51,8 +51,10 @@ class RobotP3DX(Robot):
             w: Angular velocity of the robot center [rad/s].
 
         """
-        rc = vrep.simxSetJointTargetVelocity(self._client_id, self._motors['left'], w, vrep.simx_opmode_oneshot)
-        rc = vrep.simxSetJointTargetVelocity(self._client_id, self._motors['right'], w, vrep.simx_opmode_oneshot)
+        rc = vrep.simxPauseCommunication(self._client_id, True)
+        rc = vrep.simxSetJointTargetVelocity(self._client_id, self._motors['right'], v + w, vrep.simx_opmode_oneshot)
+        rc = vrep.simxSetJointTargetVelocity(self._client_id, self._motors['left'], v - w, vrep.simx_opmode_oneshot)
+        rc = vrep.simxPauseCommunication(self._client_id, False)
 
     def sense(self) -> List[float]:
         """Read ultrasonic sensors.
@@ -69,7 +71,7 @@ class RobotP3DX(Robot):
                 distance.append(np.linalg.norm(detected_point))
 
             else:
-                distance.append(np.inf)
+                distance.append(1)
 
 
         print(distance)
