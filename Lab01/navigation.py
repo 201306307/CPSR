@@ -22,6 +22,6 @@ class Navigation:
         """
         # TODO: Compute v and w with your algorithm
         v = 0.2
-        w = 0.1
+        w = 0.5
 
         return v, w
