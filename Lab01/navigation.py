@@ -23,7 +23,7 @@ class Navigation:
         # TODO: Compute v and w with your algorithm
         #PONGO MENOS 1 PORQUE EL SENSOR 1 ESTA EN LA POSICION 0, EL 2 EN LA 1 ETC
 
-        if measurements[4-1] > 0.4 and measurements[5-1] > 0.4 and measurements[3-1] > 0.3 and measurements[6-1] > 0.3:
+        if measurements[4-1] > 0.35 and measurements[5-1] > 0.35 and measurements[3-1] > 0.25 and measurements[6-1] > 0.25:
             #CONTROL EN RECTA
             if measurements[8-1] < 0.3:
                 print("alejo de derecha")
@@ -39,9 +39,7 @@ class Navigation:
                 v = 2
         else:
             #CONTROL EN CURVA
-            if ((measurements[16-1] > measurements[8-1]) and (measurements[1-1] > measurements[8-1])) or\
-                    ((measurements[16-1] > measurements[9-1]) and (measurements[1-1] > measurements[9-1])
-                     and measurements[16-1] > 0.99 and measurements[1-1] > 0.99 and measurements[2-1] < 0.99 and measurements[15-1] > 0.99):
+            if (((measurements[16-1] > measurements[8-1]) and (measurements[1-1] > measurements[8-1])) or ((measurements[16-1] > measurements[9-1]) and (measurements[1-1] > measurements[9-1])) and measurements[16-1] > 0.9 and measurements[8-1] < 0.4):
                 w = 0.25
                 v = 0
                 print("curva seguir pared giro hacia izq")
