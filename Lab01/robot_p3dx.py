@@ -74,7 +74,7 @@ class RobotP3DX(Robot):
                 distance.append(1)
 
 
-        print(distance)
+        # print(distance)
         return distance
 
     def _init_motors(self) -> Dict[str, int]:

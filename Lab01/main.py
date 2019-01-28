@@ -4,6 +4,8 @@ from idle import Idle
 from robot_p3dx import RobotP3DX
 from navigation import Navigation
 
+from circularbuffer import CircularBuffer
+
 
 if __name__ == '__main__':
     # Connect to V-REP
@@ -21,11 +23,16 @@ if __name__ == '__main__':
     navigation = Navigation()
     idle = Idle(ts)
 
+    error_acumulation = CircularBuffer(3);
+
+    for error in error_acumulation:
+        error_acumulation.record(0)
+
     try:
         while True:
             # Write your control algorithm here
             z = robot.sense()
-            v, w = navigation.explore(z)
+            v, w = navigation.explore(z, error_acumulation)
             robot.move(v, w)
             loop_time, overflow = idle.task()
 
