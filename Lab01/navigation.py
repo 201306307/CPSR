@@ -30,10 +30,10 @@ class Navigation:
 
         #PROPORCIONAL FUNCIONA REGULAR
 
-        if (measurements[1-1] > 0.98 and measurements[2-1] > 0.9 and measurements[7-1] < 0.9 and measurements[8-1] < 0.9 and measurements[4-1] > 0.9 and measurements[5-1] > 0.9):
+        if (measurements[1-1] > 0.9 and measurements[2-1] > 0.9 and measurements[7-1] < 0.8 and measurements[8-1] < 0.8 and measurements[4-1] > 0.9 and measurements[5-1] > 0.9):
             error = 3 * ((measurements[6-1]) + (measurements[7-1]) + (measurements[8-1]) - 0.5 - 0.5 - 1)
             print("Lado izquierdo vacío")
-        elif (measurements[7 - 1] > 0.9 and measurements[8 - 1] >0.9 and measurements[1-1] < 0.9 and measurements[2-1] <0.9 and measurements[4-1] > 0.9 and measurements[5-1] > 0.9):
+        elif (measurements[7 - 1] > 0.9 and measurements[8 - 1] > 0.9 and measurements[1-1] < 0.8 and measurements[2-1] < 0.8 and measurements[4-1] > 0.9 and measurements[5-1] > 0.9):
             error = -3 * ((measurements[1 - 1]) + (measurements[2 - 1]) + (measurements[3 - 1]) - 0.5 - 0.5 - 1)
             print("Lado derecho vacío")
         else:
