@@ -28,18 +28,16 @@ class Navigation:
         # TODO: Compute v and w with your algorithm
         #PONGO MENOS 1 PORQUE EL SENSOR 1 ESTA EN LA POSICION 0, EL 2 EN LA 1 ETC
 
-        #PROPORCIONAL FUNCIONA REGULAR
-
-        if (measurements[1-1] > 0.9 and measurements[2-1] > 0.9 and measurements[7-1] < 0.8 and measurements[8-1] < 0.8 and measurements[4-1] > 0.9 and measurements[5-1] > 0.9):
-            error = 3 * ((measurements[6-1]) + (measurements[7-1]) + (measurements[8-1]) - 0.5 - 0.5 - 1)
+        if ((measurements[1-1] > 0.9 and measurements[2-1] > 0.9) and (measurements[7-1] < 0.8 and measurements[8-1] < 0.8) and measurements[4-1] > 0.9 and measurements[5-1] > 0.9):
+            error = 3 * ((measurements[6-1]) + (measurements[7-1]) + (measurements[8-1]) - 0.45 - 0.45 - 0.5)
             print("Lado izquierdo vacío")
-        elif (measurements[7 - 1] > 0.9 and measurements[8 - 1] > 0.9 and measurements[1-1] < 0.8 and measurements[2-1] < 0.8 and measurements[4-1] > 0.9 and measurements[5-1] > 0.9):
-            error = -3 * ((measurements[1 - 1]) + (measurements[2 - 1]) + (measurements[3 - 1]) - 0.5 - 0.5 - 1)
+        elif ((measurements[7 - 1] > 0.9 and measurements[8 - 1] > 0.9) and (measurements[1-1] < 0.8 and measurements[2-1] < 0.8) and measurements[4-1] > 0.9 and measurements[5-1] > 0.9):
+            error = -3 * ((measurements[1 - 1]) + (measurements[2 - 1]) + (measurements[3 - 1]) - 0.45 - 0.45 - 0.5)
             print("Lado derecho vacío")
         else:
-            error = - (measurements[1-1]) - (measurements[2-1]) - (measurements[3-1]) + (measurements[6-1]) + (measurements[7-1]) + (measurements[8-1])
+            error = - (measurements[1-1]) - (measurements[2-1]) - (measurements[3-1]) + (measurements[6-1]) + (measurements[7-1]) + (measurements[8-1]) #La mayor parte del tiempo
 
-        error_acumulation.record(error)
+        error_acumulation.record(error) #Error acumulation es un buffer circular
 
         print(str(measurements[1-1]) + "," + str(measurements[2-1]) + "," + str(measurements[3-1]) + "," + str(measurements[4-1]) + "," + str(measurements[5-1]) + "," + str(measurements[6-1]) + "," + str(measurements[7-1]) + "," + str(measurements[8-1]))
 
@@ -47,18 +45,18 @@ class Navigation:
 
         int = sum(error_acumulation.get_all()) * 0.05
 
-        k = 2 / error
+        k = 2 / error #Vmax 2 aprox
 
         if np.abs(int) < 0.2:
             v = k * error
-            w = - 2 * int
+            w = - 2 * int #Para centrarse
         else:
             v = int
-            w = -4 * int
+            w = -2 * int #Tiene margen para moverse
 
         if ((measurements[4-1] - 1) + (measurements[5-1] - 1)) < -1.3:
             v = 0
-            w = -20 * int
+            w = -20 * int #Como se queda muy estática la integral al llegar al borde necesita un buen empujón
 
 
         return v, w

@@ -7,7 +7,7 @@ class CircularBuffer(object):
 
     def record(self, value):
         """append an element"""
-        if len(self._data) == self._size:
+        if len(self._data) == self._size: #Si no se ha inicializado
             self._data[self._index]= value
         else:
             self._data.append(value)
@@ -19,7 +19,7 @@ class CircularBuffer(object):
 
     def __repr__(self):
         """return string representation"""
-        return self._data.__repr__() + ' (' + str(len(self._data))+' items)'
+        return self._data.__repr__() + ' (' + str(len(self._data))+' items)' #Por si se quieren imprimir errores
 
     def get_all(self):
         """return a list of all the elements"""

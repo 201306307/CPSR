@@ -52,6 +52,10 @@ class RobotP3DX(Robot):
 
         """
         rc = vrep.simxPauseCommunication(self._client_id, True)
+        """
+        Con distintas velocidades en cada rueda, el robot gira
+        Con w > v y w > 0, gira en sentido contrario a las agujas del reloj
+        """
         rc = vrep.simxSetJointTargetVelocity(self._client_id, self._motors['right'], v + w, vrep.simx_opmode_oneshot)
         rc = vrep.simxSetJointTargetVelocity(self._client_id, self._motors['left'], v - w, vrep.simx_opmode_oneshot)
         rc = vrep.simxPauseCommunication(self._client_id, False)
@@ -71,7 +75,7 @@ class RobotP3DX(Robot):
                 distance.append(np.linalg.norm(detected_point))
 
             else:
-                distance.append(1)
+                distance.append(1) #Poner inf u otro valor grande desvirtúa el cálculo del error, 1 funciona bien
 
 
         # print(distance)
@@ -87,8 +91,6 @@ class RobotP3DX(Robot):
         # Handles
         rc , handle_right = vrep.simxGetObjectHandle ( self._client_id , "Pioneer_p3dx_rightMotor" , vrep . simx_opmode_blocking )
         rc, handle_left = vrep.simxGetObjectHandle(self._client_id, "Pioneer_p3dx_leftMotor", vrep.simx_opmode_blocking)
-        # Set motor speeds
-
 
 
         motors = {"left": handle_left,
