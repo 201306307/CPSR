@@ -45,18 +45,20 @@ class Navigation:
 
         int = sum(error_acumulation.get_all()) * 0.05
 
-        k = 2 / error #Vmax 2 aprox
+        k = 0.3 / error
 
         if np.abs(int) < 0.2:
             v = k * error
-            w = - 2 * int #Para centrarse
+            w = - int
         else:
-            v = int
-            w = -2 * int #Tiene margen para moverse
+            v = 0.3 * int
+            w = - 0.5 * int
 
         if ((measurements[4-1] - 1) + (measurements[5-1] - 1)) < -1.3:
             v = 0
-            w = -20 * int #Como se queda muy estática la integral al llegar al borde necesita un buen empujón
+            w = -30 * int
 
+        print("v=" + str(v))
+        print("w=" + str(w))
 
         return v, w

@@ -56,8 +56,8 @@ class RobotP3DX(Robot):
         Con distintas velocidades en cada rueda, el robot gira
         Con w > v y w > 0, gira en sentido contrario a las agujas del reloj
         """
-        rc = vrep.simxSetJointTargetVelocity(self._client_id, self._motors['right'], v + w, vrep.simx_opmode_oneshot)
-        rc = vrep.simxSetJointTargetVelocity(self._client_id, self._motors['left'], v - w, vrep.simx_opmode_oneshot)
+        rc = vrep.simxSetJointTargetVelocity(self._client_id, self._motors['right'], (v + self.TRACK/2 * w) / self.WHEEL_RADIUS, vrep.simx_opmode_oneshot)
+        rc = vrep.simxSetJointTargetVelocity(self._client_id, self._motors['left'], (v - self.TRACK/2 * w) / self.WHEEL_RADIUS, vrep.simx_opmode_oneshot)
         rc = vrep.simxPauseCommunication(self._client_id, False)
 
     def sense(self) -> List[float]:
