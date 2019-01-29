@@ -23,7 +23,7 @@ if __name__ == '__main__':
     navigation = Navigation()
     idle = Idle(ts)
 
-    error_acumulation = CircularBuffer(3) #4 es factible, 5 y 2 no funcionan con estos parámetros
+    error_acumulation = CircularBuffer(4) #4 es factible, 5 y 2 no funcionan con estos parámetros
 
     for error in error_acumulation:
         error_acumulation.record(0)
