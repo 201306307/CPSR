@@ -35,11 +35,11 @@ class Navigation:
             error = -3 * ((measurements[1 - 1]) + (measurements[2 - 1]) + (measurements[3 - 1]) - 0.45 - 0.45 - 0.5)
             print("Lado derecho vacío")
         else:
-            error = - (measurements[1-1]) - (measurements[2-1]) - (measurements[3-1]) + (measurements[6-1]) + (measurements[7-1]) + (measurements[8-1]) #La mayor parte del tiempo
+            error = - 1 * (measurements[1-1]) - (measurements[2-1]) - (measurements[3-1]) + (measurements[6-1]) + (measurements[7-1]) + (measurements[8-1]) #La mayor parte del tiempo
 
         error_acumulation.record(error) #Error acumulation es un buffer circular
 
-        print(str(measurements[1-1]) + "," + str(measurements[2-1]) + "," + str(measurements[3-1]) + "," + str(measurements[4-1]) + "," + str(measurements[5-1]) + "," + str(measurements[6-1]) + "," + str(measurements[7-1]) + "," + str(measurements[8-1]))
+        # print(str(measurements[1-1]) + "," + str(measurements[2-1]) + "," + str(measurements[3-1]) + "," + str(measurements[4-1]) + "," + str(measurements[5-1]) + "," + str(measurements[6-1]) + "," + str(measurements[7-1]) + "," + str(measurements[8-1]))
 
         der = (error - error_acumulation.__getitem__(error_acumulation._index - 2)) / 0.05
 
@@ -47,18 +47,15 @@ class Navigation:
 
         k = 0.3 / error
 
-        if np.abs(int) < 0.2:
+        if np.abs(int) < 0.18:
             v = k * error
             w = - int
         else:
-            v = 0.3 * int
-            w = - 0.5 * int
+            v = 0.1 * int
+            w = - 1.8 * int
 
-        if ((measurements[4-1] - 1) + (measurements[5-1] - 1)) < -1.3:
+        if ((measurements[4-1] - 1) + (measurements[5-1] - 1)) < -1.5:
             v = 0
-            w = -30 * int
-
-        print("v=" + str(v))
-        print("w=" + str(w))
+            w = -20 * int
 
         return v, w
