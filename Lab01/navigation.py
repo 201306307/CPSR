@@ -43,19 +43,19 @@ class Navigation:
 
         der = (error - error_acumulation.__getitem__(error_acumulation._index - 2)) / 0.05
 
-        int = sum(error_acumulation.get_all()) * 0.05
+        integ = sum(error_acumulation.get_all()) * 0.05
 
         k = 0.3 / error
 
-        if np.abs(int) < 0.2:
+        if np.abs(integ) < 0.2:
             v = k * error
-            w = - 0.7 * int
+            w = - 0.7 * integ
         else:
-            v = 0.1 * int
-            w = - 1.6 * int
+            v = 0.1 * integ
+            w = - 1.6 * integ
 
         if ((measurements[4-1] - 1) + (measurements[5-1] - 1)) < -1.4:
             v = 0
-            w = -14 * int
+            w = -14 * integ
 
         return v, w
