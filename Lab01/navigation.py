@@ -56,6 +56,6 @@ class Navigation:
 
         if ((measurements[4-1] - 1) + (measurements[5-1] - 1)) < -1.4:
             v = 0
-            w = -14 * integ
+            w = -1
 
         return v, w
