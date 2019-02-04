@@ -72,9 +72,19 @@ class Intersect:
 
         intersect_in_c = ctypes.CDLL("cpsr.so")
 
-        intersect_in_c.intersect.argtypes(ctypes.c_float)
+        intersect_in_c.intersect.argtypes(ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.POINTER(ctypes.c_float))
 
-        point = intersect_in_c.intersect(line1[0][0], line1[1][0], line2[0][0], line2[1][0], line1[1][0], line1[1][1], line2[1][0], line2[1][1])
+        try:
+            rc = intersect_in_c.intersect(line1[0][0], line1[1][0], line2[0][0], line2[1][0], line1[1][0], line1[1][1], line2[1][0], line2[1][1], point)
+
+            if rc == 0:
+                print("collinear")
+            elif rc == 1:
+                print("no collision")
+            elif rc == 2:
+                print("collision")
+        except:
+            print("c script not executed")
 
         if math.isnan(point[0]) or math.isnan(point[1]):
             return None
