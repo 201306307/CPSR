@@ -52,9 +52,24 @@ class ParticleFilter:
 
         # TODO: Complete with your code.
         for particle in self._particles:
-            particle[0] = particle[0] + np.cos(particle[2]) * (v + random.gauss(0,self._v_noise)) * dt
-            particle[1] = particle[1] + np.sin(particle[2]) * (v + random.gauss(0,self._v_noise)) * dt
-            particle[2] = np.mod(particle[2] + (w + random.gauss(0,self._w_noise))* dt, 2 * np.pi)
+
+            if particle[3] != 1:
+                particle0_new = particle[0] + np.cos(particle[2]) * (v + random.gauss(0,self._v_noise)) * dt
+                particle1_new = particle[1] + np.sin(particle[2]) * (v + random.gauss(0,self._v_noise)) * dt
+                particle2_new = np.mod(particle[2] + (w + random.gauss(0,self._w_noise))* dt, 2 * np.pi)
+                point_crash, _ = self._map.check_collision([(particle[0],particle[1]),(particle0_new, particle1_new)])
+
+                if len(point_crash) > 1:
+                    particle[0] = particle[0]
+                    particle[1] = particle[1]
+                    particle[2] = particle[2]
+                    particle[3] = 1
+                else:
+                    particle[0] = particle0_new
+                    particle[1] = particle1_new
+                    particle[2] = particle2_new
+
+
 
     def resample(self, measurements: List[float]):
         """Samples a new set of set of particles using the resampling wheel method.
@@ -141,7 +156,7 @@ class ParticleFilter:
         Returns: A numpy array of tuples (x, y, theta).
 
         """
-        particles = np.empty((particle_count, 3), dtype=object)
+        particles = np.empty((particle_count, 4), dtype=object)
 
         map_bounds = self._map.bounds()  # retrieve the bounds of the map (rectangle containing the map)
 
@@ -149,6 +164,7 @@ class ParticleFilter:
             particle[0] = random.uniform(map_bounds[0], map_bounds[2])
             particle[1] = random.uniform(map_bounds[1], map_bounds[3])
             particle[2] = random.choice([0, np.pi/2, np.pi, 3*np.pi/2])  # the orientation has only 4 possible values
+            particle[3] = 0
 
         return particles
 
