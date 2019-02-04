@@ -52,9 +52,9 @@ class ParticleFilter:
 
         # TODO: Complete with your code.
         for particle in self._particles:
-            particle[0] = particle[0] + np.cos(particle[2]) * v
-            particle[1] = particle[1] + np.sin(particle[2]) * v
-            particle[2] = np.mod(particle[2] + w * dt, 2 * np.pi)
+            particle[0] = particle[0] + np.cos(particle[2]) * (v + random.gauss(0,self._v_noise)) * dt
+            particle[1] = particle[1] + np.sin(particle[2]) * (v + random.gauss(0,self._v_noise)) * dt
+            particle[2] = np.mod(particle[2] + (w + random.gauss(0,self._w_noise))* dt, 2 * np.pi)
 
     def resample(self, measurements: List[float]):
         """Samples a new set of set of particles using the resampling wheel method.
