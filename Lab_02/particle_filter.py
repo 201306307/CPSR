@@ -170,9 +170,10 @@ class ParticleFilter:
                 particle[1] = random.uniform(map_bounds[1], map_bounds[3])
 
                 # the orientation has only 4 possible values
-                is_valid = self._map.contains([particle[0], particle[1]])  # check if particle is in map
+                is_valid = self._map.contains((particle[0], particle[1]))  # check if particle is in map
 
             particle[2] = random.choice([0, np.pi / 2, np.pi, 3 * np.pi / 2])
+            particle[3] = 0
 
         return particles
 
@@ -243,7 +244,10 @@ class ParticleFilter:
             float: Probability.
 
         """
-        # TODO: Complete with your code.
+        for measurement in measurements:
+            if measurement >= 2:
+                measurement = 2
+
         pass
 
     def _sensor_rays(self, particle: Tuple[float, float, float]) -> List[List[Tuple[float, float]]]:
