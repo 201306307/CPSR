@@ -56,8 +56,7 @@ class ParticleFilter:
             if particle[3] != 1:
                 particle0_new = particle[0] + np.cos(particle[2]) * (v + random.gauss(0,self._v_noise)) * dt
                 particle1_new = particle[1] + np.sin(particle[2]) * (v + random.gauss(0,self._v_noise)) * dt
-                particle2_new = np.mod(particle[2] + (w + random.gauss(0,self._w_noise))* dt, 2 * np.pi)
-                point_crash, _ = self._map.check_collision([(particle[0],particle[1]),(particle0_new, particle1_new)])
+                point_crash, distance = self._map.check_collision([(particle[0],particle[1]),(particle0_new, particle1_new)])
 
                 if len(point_crash) > 1:
                     particle[0] = particle[0]
@@ -65,6 +64,7 @@ class ParticleFilter:
                     particle[2] = particle[2]
                     particle[3] = 1
                 else:
+                    particle2_new = np.mod(particle[2] + (w + random.gauss(0, self._w_noise)) * dt, 2 * np.pi)
                     particle[0] = particle0_new
                     particle[1] = particle1_new
                     particle[2] = particle2_new
@@ -196,8 +196,12 @@ class ParticleFilter:
         """
         rays = self._sensor_rays(particle)
 
-        # TODO: Complete with your code.
-        pass
+        point_crash, distance = self._map.check_collision(rays[0], compute_distance=True)
+
+        if len(point_crash) < 1:
+            return np.inf
+        else:
+            return distance
 
     @staticmethod
     def _gaussian(mu: float, sigma: float, x: float) -> float:
@@ -212,8 +216,9 @@ class ParticleFilter:
             float: Gaussian.
 
         """
-        # TODO: Complete with your code.
-        pass
+        value =  random.gauss(mu, sigma)
+
+        return value
 
     def _measurement_probability(self, measurements: List[float], particle: Tuple[float, float, float]) -> float:
         """Computes the probability of a set of measurements given a particle's pose.

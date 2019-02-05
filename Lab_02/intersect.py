@@ -70,7 +70,7 @@ class Intersect:
         """
         # point = self.intersect(segment1, segment2)
 
-
+        #
         point = (ctypes.c_float * 2)()
 
 
