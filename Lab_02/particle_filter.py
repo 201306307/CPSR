@@ -146,10 +146,15 @@ class ParticleFilter:
         map_bounds = self._map.bounds()  # retrieve the bounds of the map (rectangle containing the map)
 
         for particle in particles:
-            particle[0] = random.uniform(map_bounds[0], map_bounds[2])
-            particle[1] = random.uniform(map_bounds[1], map_bounds[3])
-            particle[2] = random.choice([0, np.pi/2, np.pi, 3*np.pi/2])  # the orientation has only 4 possible values
+            is_valid = False
+            while not is_valid:
+                particle[0] = random.uniform(map_bounds[0], map_bounds[2])
+                particle[1] = random.uniform(map_bounds[1], map_bounds[3])
 
+                # the orientation has only 4 possible values
+                is_valid = self._map.contains([particle[0], particle[1]])  # check if particle is in map
+
+            particle[2] = random.choice([0, np.pi / 2, np.pi, 3 * np.pi / 2])
         return particles
 
     @staticmethod
