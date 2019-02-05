@@ -77,8 +77,30 @@ class ParticleFilter:
             measurements: Sensor measurements [m].
 
         """
-        # TODO: Complete with your code.
-        pass
+        weights = []
+        max = 0
+
+        for particle in self._particles:
+            new_weight = self._measurement_probability(measurements, particle)
+            if new_weight > max:
+                max = new_weight
+            weights.append(new_weight)
+
+        beta = 0
+        particle_count = len(weights)
+        index = random.randrange(0, particle_count)
+        new_particles = np.empty((particle_count, 4), dtype=object)
+
+        for i in range(0, particle_count):
+            beta = beta + random.uniform(0, 2 * max)
+            while weights[index] < beta:
+                beta = beta - weights[index]
+                if index == particle_count:
+                    index = 0
+                else:
+                    index = index + 1
+            new_particles[i] = self._particles[index]
+
 
     def plot(self, axes, orientation: bool = True):
         """Draws particles.
@@ -208,16 +230,17 @@ class ParticleFilter:
         """Computes the value of a Gaussian.
 
         Args:
-            mu: Mean.
-            sigma: Standard deviation.
-            x: Variable.
+            mu: Mean. - medida
+            sigma: Standard deviation. - ruido
+            x: Variable. - estimada
 
         Returns:
             float: Gaussian.
 
         """
-        # TODO: Complete with your code.
-        pass
+        value = 1 / (np.sqrt(2 * np.pi * sigma ^ 2)) * np.e ^ (- 1 / 2 * (mu - x) ^ 2 / sigma * 2)
+
+        return value
 
     def _measurement_probability(self, measurements: List[float], particle: Tuple[float, float, float]) -> float:
         """Computes the probability of a set of measurements given a particle's pose.
@@ -234,8 +257,20 @@ class ParticleFilter:
             float: Probability.
 
         """
-        # TODO: Complete with your code.
-        pass
+
+        probability = 1
+
+        for measurement in measurements:
+            if measurement == np.inf:
+                measurement = 2 * self._sensor_range
+            else:
+                measurement = measurement
+
+            measurement_p = self._sense(particle)
+
+            probability *= self._gaussian(measurement, measurement_p, self._sense_noise)
+
+        return probability
 
     def _sensor_rays(self, particle: Tuple[float, float, float]) -> List[List[Tuple[float, float]]]:
         """Determines the simulated sensor ray segments for a given particle.
