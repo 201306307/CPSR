@@ -50,24 +50,21 @@ class ParticleFilter:
         """
         self._iteration += 1
 
-        # TODO: Complete with your code.
         for particle in self._particles:
 
-            if particle[3] != 1:
-                particle0_new = particle[0] + np.cos(particle[2]) * (v + random.gauss(0,self._v_noise)) * dt
-                particle1_new = particle[1] + np.sin(particle[2]) * (v + random.gauss(0,self._v_noise)) * dt
-                point_crash, distance = self._map.check_collision([(particle[0],particle[1]),(particle0_new, particle1_new)])
+            particle0_new = particle[0] + np.cos(particle[2]) * (v + random.gauss(0,self._v_noise)) * dt
+            particle1_new = particle[1] + np.sin(particle[2]) * (v + random.gauss(0,self._v_noise)) * dt
+            point_crash, distance = self._map.check_collision([(particle[0],particle[1]),(particle0_new, particle1_new)])
 
-                if len(point_crash) > 1:
-                    particle[0] = particle[0]
-                    particle[1] = particle[1]
-                    particle[2] = particle[2]
-                    particle[3] = 1
-                else:
-                    particle2_new = np.mod(particle[2] + (w + random.gauss(0, self._w_noise)) * dt, 2 * np.pi)
-                    particle[0] = particle0_new
-                    particle[1] = particle1_new
-                    particle[2] = particle2_new
+            if len(point_crash) > 1:
+                particle[0] = particle[0]
+                particle[1] = particle[1]
+                particle[2] = particle[2]
+            else:
+                particle2_new = np.mod(particle[2] + (w + random.gauss(0, self._w_noise)) * dt, 2 * np.pi)
+                particle[0] = particle0_new
+                particle[1] = particle1_new
+                particle[2] = particle2_new
 
 
 
@@ -78,8 +75,30 @@ class ParticleFilter:
             measurements: Sensor measurements [m].
 
         """
-        # TODO: Complete with your code.
-        pass
+        # First obtain normalized weights
+        weights = []
+        beta = 0
+        new_particles = np.empty((len(self._particles), 3), dtype=object)
+
+        for particle in self._particles:
+            weights.append(self._measurement_probability(measurements, particle))
+
+        weights_total = sum(weights)
+        weights_normalized = [w / weights_total for w in weights]
+
+        index = int(np.random.uniform(0, len(self._particles)))
+        weight_max = max(weights_normalized)
+
+        for i in range(0, len(self._particles)):
+            beta = beta + random.random() * 2.0 * weight_max
+            while beta >= weights_normalized[index]:
+                beta = beta - weights_normalized[index]
+                index = (index + 1)
+                if index == len(self._particles):
+                    index = 0
+            new_particles[i] = self._particles[index]
+
+        self._particles = new_particles
 
     def plot(self, axes, orientation: bool = True):
         """Draws particles.
@@ -158,7 +177,7 @@ class ParticleFilter:
         """
 
 
-        particles = np.empty((particle_count, 4), dtype=object)
+        particles = np.empty((particle_count, 3), dtype=object)
 
         map_bounds = self._map.bounds()  # retrieve the bounds of the map (rectangle containing the map)
 
@@ -173,7 +192,6 @@ class ParticleFilter:
                 is_valid = self._map.contains((particle[0], particle[1]))  # check if particle is in map
 
             particle[2] = random.choice([0, np.pi / 2, np.pi, 3 * np.pi / 2])
-            particle[3] = 0
 
         return particles
 
@@ -203,29 +221,32 @@ class ParticleFilter:
         Returns: List of predicted measurements; inf if a sensor is out of range.
 
         """
+
+        distances = []
+
         rays = self._sensor_rays(particle)
 
-        point_crash, distance = self._map.check_collision(rays[0], compute_distance=True)
+        for ray in rays:
+            _, distance = self._map.check_collision(ray, compute_distance=True)
+            distances.append(distance)
 
-        if len(point_crash) < 1:
-            return np.inf
-        else:
-            return distance
+        return distances
+
 
     @staticmethod
     def _gaussian(mu: float, sigma: float, x: float) -> float:
         """Computes the value of a Gaussian.
 
         Args:
-            mu: Mean.
-            sigma: Standard deviation.
-            x: Variable.
+            mu: Mean. - medida
+            sigma: Standard deviation. - ruido
+            x: Variable. - estimada
 
         Returns:
             float: Gaussian.
 
         """
-        value =  random.gauss(mu, sigma)
+        value = math.exp(- 0.5 * ((x - mu) / sigma) **2) / (sigma * math.sqrt(2 * math.pi))
 
         return value
 
@@ -244,11 +265,19 @@ class ParticleFilter:
             float: Probability.
 
         """
-        for measurement in measurements:
-            if measurement >= 2:
-                measurement = 2
+        probability = 1
 
-        pass
+        measurements = [measure if not measure == float('inf') else 2 * self._sensor_range for measure in measurements]
+
+        pred_measurements = self._sense(particle) #Predicted measurements
+        pred_measurements = [measure if not measure == float('inf') else 2 * self._sensor_range for measure in
+                             pred_measurements]
+
+        for measure, pred_measure in zip(measurements, pred_measurements):
+            probability = probability * self._gaussian(measure, pred_measure, self._sense_noise) #Compute weight
+
+        return probability
+
 
     def _sensor_rays(self, particle: Tuple[float, float, float]) -> List[List[Tuple[float, float]]]:
         """Determines the simulated sensor ray segments for a given particle.
