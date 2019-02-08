@@ -3,6 +3,13 @@ import numpy as np
 import os
 import random
 
+import time
+
+from math import pi
+
+from line_profiler import LineProfiler
+
+
 from map import Map
 from typing import List, Tuple
 
@@ -50,23 +57,28 @@ class ParticleFilter:
         """
         self._iteration += 1
 
+        # TODO: Complete with your code.
         for particle in self._particles:
+            v_noise = v + np.random.normal(0, self._v_noise)
+            w_noise = w + np.random.normal(0, self._w_noise)
 
-            particle0_new = particle[0] + np.cos(particle[2]) * (v + random.gauss(0,self._v_noise)) * dt
-            particle1_new = particle[1] + np.sin(particle[2]) * (v + random.gauss(0,self._v_noise)) * dt
-            point_crash, distance = self._map.check_collision([(particle[0],particle[1]),(particle0_new, particle1_new)])
+            x = particle[0] + v_noise * dt * math.cos(particle[2])
+            y = particle[1] + v_noise * dt * math.sin(particle[2])
+            th = particle[2] + w_noise * dt
 
-            if len(point_crash) > 1:
-                particle[0] = particle[0]
-                particle[1] = particle[1]
-                particle[2] = particle[2]
-            else:
-                particle2_new = np.mod(particle[2] + (w + random.gauss(0, self._w_noise)) * dt, 2 * np.pi)
-                particle[0] = particle0_new
-                particle[1] = particle1_new
-                particle[2] = particle2_new
+            # Check th in range [0, 2 pi)
+            th = th % (2 * pi)
 
+            intersection, _ = self._map.check_collision([(particle[0], particle[1]), (x, y)], False)
+            if intersection:
+                x = intersection[0]
+                y = intersection[1]
 
+            particle[0] = x
+            particle[1] = y
+            particle[2] = th
+
+        pass
 
     def resample(self, measurements: List[float]):
         """Samples a new set of set of particles using the resampling wheel method.
@@ -76,25 +88,25 @@ class ParticleFilter:
 
         """
         # First obtain normalized weights
-        weights = []
         beta = 0
         new_particles = np.empty((len(self._particles), 3), dtype=object)
 
-        for particle in self._particles:
-            weights.append(self._measurement_probability(measurements, particle))
+        N = len(self._particles)
+
+        weights = [self._measurement_probability(measurements, particle) for particle in self._particles]
 
         weights_total = sum(weights)
         weights_normalized = [w / weights_total for w in weights]
 
-        index = int(np.random.uniform(0, len(self._particles)))
+        index = int(np.random.uniform(0, N))
         weight_max = max(weights_normalized)
 
-        for i in range(0, len(self._particles)):
+        for i in range(0, N):
             beta = beta + random.random() * 2.0 * weight_max
             while beta >= weights_normalized[index]:
                 beta = beta - weights_normalized[index]
                 index = (index + 1)
-                if index == len(self._particles):
+                if index == N:
                     index = 0
             new_particles[i] = self._particles[index]
 
@@ -222,15 +234,16 @@ class ParticleFilter:
 
         """
 
-        distances = []
-
         rays = self._sensor_rays(particle)
 
-        for ray in rays:
-            _, distance = self._map.check_collision(ray, compute_distance=True)
-            distances.append(distance)
+        pred_measurements = []
 
-        return distances
+        # TODO: Complete with your code.
+        for ray in rays:
+            _, distance = self._map.check_collision(ray, True)
+            pred_measurements.append(distance)
+
+        return pred_measurements
 
 
     @staticmethod
@@ -246,9 +259,10 @@ class ParticleFilter:
             float: Gaussian.
 
         """
-        value = math.exp(- 0.5 * ((x - mu) / sigma) **2) / (sigma * math.sqrt(2 * math.pi))
+        value = math.exp(- 0.5 * ((x - mu) / sigma) **2)
 
         return value
+
 
     def _measurement_probability(self, measurements: List[float], particle: Tuple[float, float, float]) -> float:
         """Computes the probability of a set of measurements given a particle's pose.
@@ -267,14 +281,16 @@ class ParticleFilter:
         """
         probability = 1
 
-        measurements = [measure if not measure == float('inf') else 2 * self._sensor_range for measure in measurements]
+        measurements = [2 * self._sensor_range if math.isinf(z) else z for z in measurements]
 
         pred_measurements = self._sense(particle) #Predicted measurements
+
+
         pred_measurements = [measure if not measure == float('inf') else 2 * self._sensor_range for measure in
                              pred_measurements]
 
         for measure, pred_measure in zip(measurements, pred_measurements):
-            probability = probability * self._gaussian(measure, pred_measure, self._sense_noise) #Compute weight
+            probability *= self._gaussian(measure, self._sense_noise, pred_measure) #Compute weight
 
         return probability
 

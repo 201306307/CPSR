@@ -1,11 +1,5 @@
 #include <stdbool.h>
 
-typedef struct {
-    float x;
-    float y;
-} Point;
-
-
 int intersect(float p0_x, float p1_x, float p2_x, float p3_x, float p0_y, float p1_y, float p2_y, float p3_y, float *point) {
 
 	float s02_x, s02_y, s10_x, s10_y, s32_x, s32_y, s_numer, t_numer, denom, t;
@@ -16,6 +10,8 @@ int intersect(float p0_x, float p1_x, float p2_x, float p3_x, float p0_y, float 
 
 	denom = s10_x * s32_y - s32_x * s10_y;
 	if (denom == 0){
+	   point[0] = 0.0;
+	   point[1] = 0.0;
 	   return 0; // Collinear
 	}
 	bool denomPositive;
@@ -25,15 +21,21 @@ int intersect(float p0_x, float p1_x, float p2_x, float p3_x, float p0_y, float 
 	s02_y = p0_y - p2_y;
 	s_numer = s10_x * s02_y - s10_y * s02_x;
 	if ((s_numer < 0) == denomPositive){
+	   point[0] = 0.0;
+	   point[1] = 0.0;
 	   return 1; // No collision
 	}
 
 	t_numer = s32_x * s02_y - s32_y * s02_x;
 	if ((t_numer < 0) == denomPositive){
+	   point[0] = 0.0;
+	   point[1] = 0.0;
 	   return 1; // No collision
 	}
 
 	if (((s_numer > denom) == denomPositive) || ((t_numer > denom) == denomPositive)){
+	   point[0] = 0.0;
+	   point[1] = 0.0;
 	   return 1; // No collision
 	}
 	// Collision detected

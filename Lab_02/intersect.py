@@ -68,51 +68,45 @@ class Intersect:
             None if the segments are parallel or the intersection is not contained in both segments.
 
         """
-        # point = self.intersect(segment1, segment2)
+        #point = self.intersect(segment1, segment2)
 
         #
-        point = (ctypes.c_float * 2)()
 
-
-        rc = intersect_in_c.intersect(segment1[0][0], segment1[1][0], segment2[0][0], segment2[1][0], segment1[0][1], segment1[1][1], segment2[0][1], segment2[1][1], point)
+        int(segment1[0][0], segment1[1][0], segment2[0][0], segment2[1][0], segment1[0][1], segment1[1][1], segment2[0][1], segment2[1][1], point)
 
         if point[0] == 0.0 and point[1] == 0.0:
             return None
+        else:
+            return [round(point[0],6), round(point[1],6)]
 
-        # if rc == 0:
-        #     print("collinear")
-        # elif rc == 1:
-        #     print("no collision")
-        # elif rc == 2:
-        #     print("collision")
 
         # if math.isnan(point[0]) or math.isnan(point[1]):
         #     return None
 
-        for i in range(2):
-            # Round variables to avoid issues with float precision
-            pt = round(point[i], 6)
-            l11 = round(segment1[0][i], 6)
-            l12 = round(segment1[1][i], 6)
+        # for i in range(2):
+        #     # Round variables to avoid issues with float precision
+        #     pt = round(point[i], 6)
+        #     l11 = round(segment1[0][i], 6)
+        #     l12 = round(segment1[1][i], 6)
+        #
+        #     if l11 < l12:
+        #         if pt < l11 or pt > l12:
+        #             return None
+        #     else:
+        #         if pt > l11 or pt < l12:
+        #             return None
+        #
+        #     l21 = round(segment2[0][i], 6)
+        #     l22 = round(segment2[1][i], 6)
+        #
+        #     if l21 < l22:
+        #         if pt < l21 or pt > l22:
+        #             return None
+        #     else:
+        #         if pt > l21 or pt < l22:
+        #             return None
 
-            if l11 < l12:
-                if pt < l11 or pt > l12:
-                    return None
-            else:
-                if pt > l11 or pt < l12:
-                    return None
-
-            l21 = round(segment2[0][i], 6)
-            l22 = round(segment2[1][i], 6)
-
-            if l21 < l22:
-                if pt < l21 or pt > l22:
-                    return None
-            else:
-                if pt > l21 or pt < l22:
-                    return None
-
-        return point
+        # return point
 
     @staticmethod
     def _intercept(slope: float, p: Tuple[float, float]) -> float:

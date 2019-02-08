@@ -83,7 +83,7 @@ class Map:
             if pt is not None:
                 intersections.append(pt)
 
-        if (compute_distance and intersections) or len(intersections) > 1:
+        if (compute_distance and intersections):
             distances = [math.sqrt((pt[0] - segment[0][0]) ** 2 + (pt[1] - segment[0][1]) ** 2) for pt in intersections]
             index = int(np.argmin(distances))
             distance = distances[index]
