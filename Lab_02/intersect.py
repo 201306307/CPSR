@@ -73,7 +73,7 @@ class Intersect:
         #
 
 
-        int(segment1[0][0], segment1[1][0], segment2[0][0], segment2[1][0], segment1[0][1], segment1[1][1], segment2[0][1], segment2[1][1], point)
+        inter(segment1[0][0], segment1[1][0], segment2[0][0], segment2[1][0], segment1[0][1], segment1[1][1], segment2[0][1], segment2[1][1], point)
 
         if point[0] == 0.0 and point[1] == 0.0:
             return None

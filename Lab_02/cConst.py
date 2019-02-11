@@ -20,4 +20,4 @@ intersect_in_c.intersect.argtypes = (ctypes.c_float, ctypes.c_float, ctypes.c_fl
 point = (ctypes.c_float * 3)()
 
 
-int = intersect_in_c.intersect
+inter = intersect_in_c.intersect
