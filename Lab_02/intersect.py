@@ -4,7 +4,7 @@ from typing import List, Optional, Tuple
 
 import ctypes
 
-
+from cConst import *
 
 class Intersect:
     """Class to find the intersection point between lines and segments.
@@ -70,21 +70,15 @@ class Intersect:
         """
         point = self.intersect(segment1, segment2)
 
-        # intersect_in_c = ctypes.CDLL("cpsr.so")
         #
-        # intersect_in_c.intersect.argtypes(ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.POINTER(ctypes.c_float))
 
-        try:
-            rc = intersect_in_c.intersect(line1[0][0], line1[1][0], line2[0][0], line2[1][0], line1[1][0], line1[1][1], line2[1][0], line2[1][1], point)
+        # int(segment1[0][0], segment1[1][0], segment2[0][0], segment2[1][0], segment1[0][1], segment1[1][1], segment2[0][1], segment2[1][1], point)
+        #
+        # if point[0] == 0.0 and point[1] == 0.0:
+        #     return None
+        # else:
+        #     return [round(point[0],6), round(point[1],6)]
 
-            if rc == 0:
-                print("collinear")
-            elif rc == 1:
-                print("no collision")
-            elif rc == 2:
-                print("collision")
-        except:
-            print("c script not executed")
 
         if math.isnan(point[0]) or math.isnan(point[1]):
             return None

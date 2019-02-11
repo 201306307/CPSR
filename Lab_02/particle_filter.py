@@ -3,6 +3,13 @@ import numpy as np
 import os
 import random
 
+import time
+
+from math import pi
+
+from line_profiler import LineProfiler
+
+
 from map import Map
 from typing import List, Tuple
 
@@ -52,23 +59,26 @@ class ParticleFilter:
 
         # TODO: Complete with your code.
         for particle in self._particles:
+            v_noise = v + np.random.normal(0, self._v_noise)
+            w_noise = w + np.random.normal(0, self._w_noise)
 
-            if particle[3] != 1:
-                particle0_new = particle[0] + np.cos(particle[2]) * (v + random.gauss(0, self._v_noise)) * dt
-                particle1_new = particle[1] + np.sin(particle[2]) * (v + random.gauss(0, self._v_noise)) * dt
-                point_crash, distance = self._map.check_collision(
-                    [(particle[0], particle[1]), (particle0_new, particle1_new)])
+            x = particle[0] + v_noise * dt * math.cos(particle[2])
+            y = particle[1] + v_noise * dt * math.sin(particle[2])
+            th = particle[2] + w_noise * dt
 
-                if len(point_crash) > 1:
-                    particle[0] = particle[0]
-                    particle[1] = particle[1]
-                    particle[2] = particle[2]
-                    particle[3] = 1
-                else:
-                    particle2_new = np.mod(particle[2] + (w + random.gauss(0, self._w_noise)) * dt, 2 * np.pi)
-                    particle[0] = particle0_new
-                    particle[1] = particle1_new
-                    particle[2] = particle2_new
+            # Check th in range [0, 2 pi)
+            th = th % (2 * pi)
+
+            intersection, _ = self._map.check_collision([(particle[0], particle[1]), (x, y)], False)
+            if intersection:
+                x = intersection[0]
+                y = intersection[1]
+
+            particle[0] = x
+            particle[1] = y
+            particle[2] = th
+
+        pass
 
     def resample(self, measurements: List[float]):
         """Samples a new set of set of particles using the resampling wheel method.
@@ -77,30 +87,30 @@ class ParticleFilter:
             measurements: Sensor measurements [m].
 
         """
-        weights = []
-        max = 0
-
-        for particle in self._particles:
-            new_weight = self._measurement_probability(measurements, particle)
-            if new_weight > max:
-                max = new_weight
-            weights.append(new_weight)
-
+        # First obtain normalized weights
         beta = 0
-        particle_count = len(weights)
-        index = random.randrange(0, particle_count)
-        new_particles = np.empty((particle_count, 4), dtype=object)
+        new_particles = np.empty((len(self._particles), 3), dtype=object)
 
-        for i in range(0, particle_count):
-            beta = beta + random.uniform(0, 2 * max)
-            while weights[index] < beta:
-                beta = beta - weights[index]
-                if index == particle_count:
+        N = len(self._particles)
+
+        weights = [self._measurement_probability(measurements, particle) for particle in self._particles]
+
+        weights_total = sum(weights)
+        weights_normalized = [w / weights_total for w in weights]
+
+        index = int(np.random.uniform(0, N))
+        weight_max = max(weights_normalized)
+
+        for i in range(0, N):
+            beta = beta + random.random() * 2.0 * weight_max
+            while beta >= weights_normalized[index]:
+                beta = beta - weights_normalized[index]
+                index = (index + 1)
+                if index == N:
                     index = 0
-                else:
-                    index = index + 1
             new_particles[i] = self._particles[index]
 
+        self._particles = new_particles
 
     def plot(self, axes, orientation: bool = True):
         """Draws particles.
@@ -177,9 +187,12 @@ class ParticleFilter:
         Returns: A numpy array of tuples (x, y, theta).
 
         """
-        particles = np.empty((particle_count, 4), dtype=object)
+
+
+        particles = np.empty((particle_count, 3), dtype=object)
 
         map_bounds = self._map.bounds()  # retrieve the bounds of the map (rectangle containing the map)
+
 
         for particle in particles:
             is_valid = False
@@ -188,10 +201,10 @@ class ParticleFilter:
                 particle[1] = random.uniform(map_bounds[1], map_bounds[3])
 
                 # the orientation has only 4 possible values
-                is_valid = self._map.contains([particle[0], particle[1]])  # check if particle is in map
+                is_valid = self._map.contains((particle[0], particle[1]))  # check if particle is in map
 
             particle[2] = random.choice([0, np.pi / 2, np.pi, 3 * np.pi / 2])
-            particle[3] = 0
+
         return particles
 
     @staticmethod
@@ -220,14 +233,18 @@ class ParticleFilter:
         Returns: List of predicted measurements; inf if a sensor is out of range.
 
         """
+
         rays = self._sensor_rays(particle)
+
         pred_measurements = []
 
+        # TODO: Complete with your code.
         for ray in rays:
             _, distance = self._map.check_collision(ray, True)
             pred_measurements.append(distance)
 
         return pred_measurements
+
 
     @staticmethod
     def _gaussian(mu: float, sigma: float, x: float) -> float:
@@ -242,9 +259,10 @@ class ParticleFilter:
             float: Gaussian.
 
         """
-        value = 1 / np.sqrt(2 * np.pi * sigma ^ 2) * np.exp(- 1 / 2 * (mu - x) ^ 2 / sigma ^ 2)
+        value = math.exp(- 0.5 * ((x - mu) / sigma) **2)
 
         return value
+
 
     def _measurement_probability(self, measurements: List[float], particle: Tuple[float, float, float]) -> float:
         """Computes the probability of a set of measurements given a particle's pose.
@@ -261,20 +279,21 @@ class ParticleFilter:
             float: Probability.
 
         """
-
         probability = 1
 
-        for measurement in measurements:
-            if measurement == np.inf:
-                measurement = 2 * self._sensor_range
-            else:
-                measurement = measurement
+        measurements = [2 * self._sensor_range if math.isinf(z) else z for z in measurements]
 
-            measurement_p = self._sense(particle)
+        pred_measurements = self._sense(particle) #Predicted measurements
 
-            probability *= self._gaussian(measurement, self._sense_noise, measurement_p)
+
+        pred_measurements = [measure if not measure == float('inf') else 2 * self._sensor_range for measure in
+                             pred_measurements]
+
+        for measure, pred_measure in zip(measurements, pred_measurements):
+            probability *= self._gaussian(measure, self._sense_noise, pred_measure) #Compute weight
 
         return probability
+
 
     def _sensor_rays(self, particle: Tuple[float, float, float]) -> List[List[Tuple[float, float]]]:
         """Determines the simulated sensor ray segments for a given particle.
