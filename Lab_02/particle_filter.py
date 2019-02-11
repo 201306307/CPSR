@@ -238,7 +238,7 @@ class ParticleFilter:
             float: Gaussian.
 
         """
-        value = 1 / (np.sqrt(2 * np.pi * sigma ^ 2)) * np.e ^ (- 1 / 2 * (mu - x) ^ 2 / sigma * 2)
+        value = 1 / (np.sqrt(2 * np.pi * sigma ^ 2)) * np.exp(- 1 / 2 * (mu - x) ^ 2 / sigma ^ 2)
 
         return value
 
@@ -268,7 +268,7 @@ class ParticleFilter:
 
             measurement_p = self._sense(particle)
 
-            probability *= self._gaussian(measurement, measurement_p, self._sense_noise)
+            probability *= self._gaussian(measurement, self._sense_noise, measurement_p)
 
         return probability
 
