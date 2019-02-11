@@ -221,9 +221,13 @@ class ParticleFilter:
 
         """
         rays = self._sensor_rays(particle)
+        pred_measurements = []
 
-        # TODO: Complete with your code.
-        pass
+        for ray in rays:
+            _, distance = self._map.check_collision(ray, True)
+            pred_measurements.append(distance)
+
+        return pred_measurements
 
     @staticmethod
     def _gaussian(mu: float, sigma: float, x: float) -> float:
@@ -238,7 +242,7 @@ class ParticleFilter:
             float: Gaussian.
 
         """
-        value = 1 / (np.sqrt(2 * np.pi * sigma ^ 2)) * np.exp(- 1 / 2 * (mu - x) ^ 2 / sigma ^ 2)
+        value = 1 / np.sqrt(2 * np.pi * sigma ^ 2) * np.exp(- 1 / 2 * (mu - x) ^ 2 / sigma ^ 2)
 
         return value
 
