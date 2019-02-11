@@ -259,7 +259,7 @@ class ParticleFilter:
             float: Gaussian.
 
         """
-        value = math.exp(- 0.5 * ((x - mu) / sigma) **2)
+        value = math.exp(- 0.5 * ((x - mu) / sigma) ** 2)
 
         return value
 
@@ -283,16 +283,17 @@ class ParticleFilter:
 
         measurements = [2 * self._sensor_range if math.isinf(z) else z for z in measurements]
 
-        pred_measurements = self._sense(particle) #Predicted measurements
+        pred_measurements = self._sense(particle)  # Predicted measurements
 
 
         pred_measurements = [measure if not measure == float('inf') else 2 * self._sensor_range for measure in
                              pred_measurements]
 
         for measure, pred_measure in zip(measurements, pred_measurements):
-            probability *= self._gaussian(measure, self._sense_noise, pred_measure) #Compute weight
+            probability *= self._gaussian(measure, self._sense_noise, pred_measure)  # Compute weight
 
         return probability
+    
 
 
     def _sensor_rays(self, particle: Tuple[float, float, float]) -> List[List[Tuple[float, float]]]:

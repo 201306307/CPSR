@@ -4,7 +4,7 @@ from typing import List, Optional, Tuple
 
 import ctypes
 
-from cConst import *
+# from cConst import *
 
 class Intersect:
     """Class to find the intersection point between lines and segments.
