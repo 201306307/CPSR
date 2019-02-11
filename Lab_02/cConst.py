@@ -15,9 +15,9 @@ path = os.path.join(os.path.dirname(__file__), 'cpsr' + file_extension)
 
 intersect_in_c = ctypes.CDLL(path)
 
-intersect_in_c.intersect.argtypes = (ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.POINTER(ctypes.ARRAY(ctypes.c_float,2)))
+intersect_in_c.intersect.argtypes = (ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.POINTER(ctypes.ARRAY(ctypes.c_float,3)))
 
-point = (ctypes.c_float * 2)()
+point = (ctypes.c_float * 3)()
 
 
 int = intersect_in_c.intersect

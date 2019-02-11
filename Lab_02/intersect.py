@@ -56,7 +56,7 @@ class Intersect:
 
         return x, y
 
-    def segment_intersect(self, segment1: List[Tuple[float, float]], segment2: List[Tuple[float, float]]) -> Optional[Tuple[float, float]]:
+    def segment_intersect(self, segment1: List[Tuple[float, float]], segment2: List[Tuple[float, float]]):
         """Computes the intersection point between two segments.
 
         Args:
@@ -72,12 +72,13 @@ class Intersect:
 
         #
 
+
         int(segment1[0][0], segment1[1][0], segment2[0][0], segment2[1][0], segment1[0][1], segment1[1][1], segment2[0][1], segment2[1][1], point)
 
         if point[0] == 0.0 and point[1] == 0.0:
             return None
         else:
-            return [round(point[0],6), round(point[1],6)]
+            return point
 
 
         # if math.isnan(point[0]) or math.isnan(point[1]):
