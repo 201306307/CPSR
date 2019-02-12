@@ -43,8 +43,58 @@ class Planning:
             Path to the destination. The first value corresponds to the initial location.
 
         """
-        # TODO: Complete with your code.
-        pass
+
+        heuristic = self._compute_heuristic(goal)
+
+        g = 0
+        goal_rc = self._xy_to_rc(goal)
+        start_rc = self._xy_to_rc(start)
+
+        f = 0
+
+        point = (start_rc, heuristic[start_rc[0], start_rc[1]], g)
+
+        open_list = []
+        closed_list = []
+
+        neighbours = []
+
+        a = point[0][0]
+
+        map_rows, map_cols = np.shape(self._map.grid_map)
+
+        matrix_appended = np.full(shape = (map_rows, map_cols), fill_value = None)
+
+        while point[0] != goal_rc:
+            neighbours.append((point[0][0], point[0][1] - 1)) #TOP
+            neighbours.append((point[0][0], point[0][1] + 1)) #BOT
+            neighbours.append((point[0][0] - 1, point[0][1])) #LEFT
+            neighbours.append((point[0][0] + 1, point[0][1])) #RIGHT
+
+            for neighbour in neighbours:
+                try:
+                    if self._map.grid_map[neighbour[0], neighbour[1]] != 1 and np.sign(neighbour[0]) != -1 and np.sign(neighbour[1]) != -1 and neighbour[0] < 9  and neighbour [1] < 9:
+                        g = point[2] + 1
+                        if matrix_appended[neighbour[0], neighbour[1]] is None:
+                            open_list.append((neighbour[0], neighbour[1], heuristic[neighbour[0], neighbour[1]] + g, g))
+                            matrix_appended[neighbour[0],neighbour[1]] = point[0]
+                except:
+                    print("Point not in map")
+
+            neighbours.clear()
+
+            open_list.sort(key = lambda r: r[2])
+
+            point = open_list
+
+            del open_list[0]
+
+            closed_list.append(point)
+
+
+        print(point)
+
+        return closed_list
 
     @staticmethod
     def smooth_path(path, data_weight: float = 0.1, smooth_weight: float = 0.1, tolerance: float = 1e-6) -> \
@@ -144,8 +194,18 @@ class Planning:
             Admissible heuristic.
 
         """
-        # TODO: Complete with your code.
-        pass
+        map_rows, map_cols = np.shape(self._map.grid_map)
+
+
+        heuristic = np.ndarray(shape = (map_rows, map_cols), dtype = int)
+
+        goal_rc = self._xy_to_rc(goal)
+
+        for i in range(0, map_rows):
+            for j in range (0, map_cols):
+                heuristic[i][j] = abs(goal_rc[0] - i) + abs(goal_rc[1] - j)
+
+        return heuristic
 
     def _reconstruct_path(self, start: Tuple[float, float], goal: Tuple[float, float], ancestors: np.ndarray) -> \
             List[Tuple[float, float]]:
