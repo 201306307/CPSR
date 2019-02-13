@@ -95,7 +95,7 @@ class ParticleFilter:
 
         weights = [self._measurement_probability(measurements, particle) for particle in self._particles]
 
-        weights_total = sum(weights)
+        weights_total = np.sum(weights)
         weights_normalized = [w / weights_total for w in weights]
 
         index = int(np.random.uniform(0, N))

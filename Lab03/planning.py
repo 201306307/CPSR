@@ -5,6 +5,8 @@ import os
 from map import Map
 from typing import List, Tuple
 
+import time
+
 import matplotlib
 matplotlib.use("TkAgg")  # Prevents matplotlib from crashing in macOS
 from matplotlib import pyplot as plt
