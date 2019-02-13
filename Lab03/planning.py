@@ -32,7 +32,8 @@ class Planning:
 
         self._action_costs = action_costs
 
-    def a_star(self, start: Tuple[float, float], goal: Tuple[float, float]) -> List[Tuple[float, float]]:
+    def a_star(self, start: Tuple[float, float], goal: Tuple[float, float]):
+        # -> List[Tuple[float, float]], np.ndarray:
         """Computes the optimal path to a given goal location using the A* algorithm.
 
         Args:
@@ -63,12 +64,13 @@ class Planning:
 
         matrix_appended = np.full(shape = (map_rows, map_cols), fill_value = None)
 
+        reconstruct_path = []
 
         open_list.append(point)
-        matrix_appended[start_rc[0], start_rc[1]] = (start_rc[0], start_rc[1])
+        matrix_appended[start_rc[0], start_rc[1]] = (start_rc[0], start_rc[1], g)
 
 
-        while point[0] != goal_rc:
+        while (point[0], point[1]) != goal_rc:
             neighbours.append((point[0], point[1] - 1)) #TOP
             neighbours.append((point[0], point[1] + 1)) #BOT
             neighbours.append((point[0] - 1, point[1])) #LEFT
@@ -78,15 +80,15 @@ class Planning:
                 try:
                     if self._map.grid_map[neighbour[0], neighbour[1]] != 1 and np.sign(neighbour[0]) != -1 and np.sign(neighbour[1]) != -1 and neighbour[0] < 9  and neighbour [1] < 9:
                         g = point[3] + 1
-                        if matrix_appended[neighbour[0], neighbour[1]] is None:
+                        if matrix_appended[neighbour[0], neighbour[1]] is None or matrix_appended[neighbour[0], neighbour[1]][2] > g:
                             open_list.append((neighbour[0], neighbour[1], heuristic[neighbour[0], neighbour[1]] + g, g))
-                            matrix_appended[neighbour[0],neighbour[1]] = (point[0], point[1])
+                            matrix_appended[neighbour[0],neighbour[1]] = (point[0], point[1], g)
                 except:
                     print("Point not in map")
 
             neighbours.clear()
 
-            open_list.sort(key = lambda r: (r[2], -r[3]))
+            open_list.sort(key = lambda r: (r[2]))
 
             point = open_list[0]
 
@@ -95,7 +97,11 @@ class Planning:
             del open_list[0]
 
 
-        return closed_list
+        reconstruct_path = self._reconstruct_path(start_rc, goal_rc, ancestors = matrix_appended)
+
+        reconstruct_path.reverse()
+
+        return reconstruct_path
 
     @staticmethod
     def smooth_path(path, data_weight: float = 0.1, smooth_weight: float = 0.1, tolerance: float = 1e-6) -> \
@@ -220,8 +226,16 @@ class Planning:
         Returns: Path to the goal (start location first) in (x, y) format.
 
         """
-        # TODO: Complete with your code.
-        pass
+        path = []
+        current = goal
+
+        path.append(self._rc_to_xy(goal))
+
+        while current != start:
+            current = (ancestors[current[0], current[1]][0], ancestors[current[0], current[1]][1])
+            path.append(self._rc_to_xy(current))
+
+        return path
 
     def _xy_to_rc(self, xy: Tuple[float, float]) -> Tuple[float, float]:
         """Converts (x, y) coordinates of a metric map to (row, col) coordinates of a grid map.
