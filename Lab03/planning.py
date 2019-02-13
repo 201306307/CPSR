@@ -52,47 +52,48 @@ class Planning:
 
         f = 0
 
-        point = (start_rc, heuristic[start_rc[0], start_rc[1]], g)
+        point = (start_rc[0], start_rc[1], heuristic[start_rc[0], start_rc[1]], g)
 
         open_list = []
         closed_list = []
 
         neighbours = []
 
-        a = point[0][0]
-
         map_rows, map_cols = np.shape(self._map.grid_map)
 
         matrix_appended = np.full(shape = (map_rows, map_cols), fill_value = None)
 
+
+        open_list.append(point)
+        matrix_appended[start_rc[0], start_rc[1]] = (start_rc[0], start_rc[1])
+
+
         while point[0] != goal_rc:
-            neighbours.append((point[0][0], point[0][1] - 1)) #TOP
-            neighbours.append((point[0][0], point[0][1] + 1)) #BOT
-            neighbours.append((point[0][0] - 1, point[0][1])) #LEFT
-            neighbours.append((point[0][0] + 1, point[0][1])) #RIGHT
+            neighbours.append((point[0], point[1] - 1)) #TOP
+            neighbours.append((point[0], point[1] + 1)) #BOT
+            neighbours.append((point[0] - 1, point[1])) #LEFT
+            neighbours.append((point[0] + 1, point[1])) #RIGHT
 
             for neighbour in neighbours:
                 try:
                     if self._map.grid_map[neighbour[0], neighbour[1]] != 1 and np.sign(neighbour[0]) != -1 and np.sign(neighbour[1]) != -1 and neighbour[0] < 9  and neighbour [1] < 9:
-                        g = point[2] + 1
+                        g = point[3] + 1
                         if matrix_appended[neighbour[0], neighbour[1]] is None:
                             open_list.append((neighbour[0], neighbour[1], heuristic[neighbour[0], neighbour[1]] + g, g))
-                            matrix_appended[neighbour[0],neighbour[1]] = point[0]
+                            matrix_appended[neighbour[0],neighbour[1]] = (point[0], point[1])
                 except:
                     print("Point not in map")
 
             neighbours.clear()
 
-            open_list.sort(key = lambda r: r[2])
+            open_list.sort(key = lambda r: (r[2], -r[3]))
 
-            point = open_list
+            point = open_list[0]
+
+            closed_list.append(open_list[0][:2])
 
             del open_list[0]
 
-            closed_list.append(point)
-
-
-        print(point)
 
         return closed_list
 
