@@ -55,6 +55,8 @@ class Planning:
 
         f = 0
 
+        i = 0
+
         point = (start_rc[0], start_rc[1], heuristic[start_rc[0], start_rc[1]], g)
 
         open_list = []
@@ -95,6 +97,10 @@ class Planning:
             point = open_list[0]
 
             closed_list.append(open_list[0][:2])
+
+            print("Number of steps: " + str(i))
+
+            i += 1
 
             del open_list[0]
 
@@ -302,7 +308,7 @@ def test():
 
     start = (-4.0, -4.0)
     goal = (4.0, 4.0)
-    action_costs = (1.0, 1.0, 1.0, 1.0)
+    action_costs = (1.0, 1.0, 1.0, 1.0) #Top, Bottom, Left, Right
 
     planning = Planning(m, action_costs)
     path = planning.a_star(start, goal)
