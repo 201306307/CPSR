@@ -55,7 +55,7 @@ class Planning:
 
         f = 0
 
-        i = 0
+        i = 1
 
         point = (start_rc[0], start_rc[1], heuristic[start_rc[0], start_rc[1]], g)
 
