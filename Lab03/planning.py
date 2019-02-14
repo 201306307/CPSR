@@ -73,15 +73,15 @@ class Planning:
 
 
         while (point[0], point[1]) != goal_rc:
-            neighbours.append((point[0], point[1] - 1)) #TOP
-            neighbours.append((point[0], point[1] + 1)) #BOT
-            neighbours.append((point[0] - 1, point[1])) #LEFT
-            neighbours.append((point[0] + 1, point[1])) #RIGHT
+            neighbours.append((point[0], point[1] - 1, self._action_costs[0])) #TOP
+            neighbours.append((point[0], point[1] + 1, self._action_costs[1])) #BOT
+            neighbours.append((point[0] - 1, point[1], self._action_costs[2])) #LEFT
+            neighbours.append((point[0] + 1, point[1], self._action_costs[3])) #RIGHT
 
             for neighbour in neighbours:
                 try:
                     if self._map.grid_map[neighbour[0], neighbour[1]] != 1 and np.sign(neighbour[0]) != -1 and np.sign(neighbour[1]) != -1 and neighbour[0] < 9  and neighbour [1] < 9:
-                        g = point[3] + 1
+                        g = point[3] + neighbour[2]
                         if matrix_appended[neighbour[0], neighbour[1]] is None or matrix_appended[neighbour[0], neighbour[1]][2] > g:
                             open_list.append((neighbour[0], neighbour[1], heuristic[neighbour[0], neighbour[1]] + g, g))
                             matrix_appended[neighbour[0],neighbour[1]] = (point[0], point[1], g)
@@ -306,7 +306,7 @@ def test():
 
     planning = Planning(m, action_costs)
     path = planning.a_star(start, goal)
-    smoothed_path = planning.smooth_path(path, data_weight=0.1, smooth_weight=0.1)
+    smoothed_path = planning.smooth_path(path, data_weight=0.1, smooth_weight=0.05)
     planning.show(path, smoothed_path, blocking=True)
 
 
