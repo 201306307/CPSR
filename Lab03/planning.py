@@ -106,8 +106,9 @@ class Planning:
         return reconstruct_path
 
     @staticmethod
-    def smooth_path(path, data_weight: float = 0.1, smooth_weight: float = 0.1, tolerance: float = 1e-6) -> \
+    def smooth_path(path, data_weight: float = 0.5, smooth_weight: float = 0.1, tolerance: float = 1e-9) -> \
             List[Tuple[float, float]]:
+
         """Computes a smooth trajectory from a Manhattan-like path.
 
         Args:
@@ -119,8 +120,25 @@ class Planning:
         Returns: Smoothed path (initial location first) in (x, y) format.
 
         """
-        # TODO: Complete with your code.
-        pass
+
+        new_path = [[0 for col in range(len(path[0]))] for row in range(len(path))]
+
+        for i in range(len(path)):
+            for j in range(len(path[0])):
+                new_path[i][j] = path[i][j]
+
+        change = 1
+        while change > tolerance:
+            change = 0
+            for i in range(1, len(path) - 1):
+                for j in range(len(path[0])):
+
+                    old_path = new_path[i][j]
+                    new_path[i][j] = new_path[i][j] + data_weight * (path[i][j] - new_path[i][j])
+                    new_path[i][j] = new_path[i][j] + smooth_weight * (new_path[i + 1][j] + new_path[i - 1][j] - 2 * new_path[i][j])
+                    change += abs(old_path - new_path[i][j])
+
+        return new_path
 
     @staticmethod
     def plot(axes, path: List[Tuple[float, float]], smoothed_path: List[Tuple[float, float]] = ()):
