@@ -7,6 +7,8 @@ from typing import List, Tuple
 
 import time
 
+from numpy import dot, arccos, asanyarray
+
 import matplotlib
 matplotlib.use("TkAgg")  # Prevents matplotlib from crashing in macOS
 from matplotlib import pyplot as plt
@@ -58,6 +60,7 @@ class Planning:
         i = 1
 
         point = (start_rc[0], start_rc[1], heuristic[start_rc[0], start_rc[1]], g)
+        point_old = (start_rc[0], start_rc[1])
 
         open_list = []
         closed_list = []
@@ -70,15 +73,206 @@ class Planning:
 
         reconstruct_path = []
 
-        open_list.append(point)
         matrix_appended[start_rc[0], start_rc[1]] = (start_rc[0], start_rc[1], g)
 
 
         while (point[0], point[1]) != goal_rc:
-            neighbours.append((point[0], point[1] - 1, self._action_costs[0])) #TOP
-            neighbours.append((point[0], point[1] + 1, self._action_costs[1])) #BOT
-            neighbours.append((point[0] - 1, point[1], self._action_costs[2])) #LEFT
-            neighbours.append((point[0] + 1, point[1], self._action_costs[3])) #RIGHT
+            d_x = point[0] - matrix_appended[point[0], point[1]][0]
+            d_y = point[1] - matrix_appended[point[0], point[1]][1]
+            direction = [d_x,d_y]
+
+            new_direction = [-1,0] #RIGHT
+            a = direction[0] * new_direction[0] + direction[1] * new_direction[1]
+            c = np.dot(np.asanyarray(direction), np.asanyarray(new_direction)) # -> cosine of the angle
+
+            if c == 1:
+                neighbours.append((point[0] - 1, point[1], self._action_costs[0])) #STRAIGHT
+            elif c == -1:
+                neighbours.append((point[0] - 1, point[1], self._action_costs[1]))  # BACKWARDS
+            elif c == 0:
+                if d_x == 0 and d_y != 0:
+                    #Se movía en vertical
+                    if d_y > 0:
+                        #Se movía aumentando y
+                        if new_direction[0] > 0:
+                            #Giro a izquierda
+                            neighbours.append((point[0] - 1, point[1], self._action_costs[2]))
+                        if new_direction[0] < 0:
+                            #Giro a derecha
+                            neighbours.append((point[0] - 1, point[1], self._action_costs[3]))
+                    if d_y > 0:
+                        #Se movía disminuyendo y
+                        if new_direction[0] > 0:
+                            #Giro a derecha
+                            neighbours.append((point[0] - 1, point[1], self._action_costs[3]))
+                        if new_direction[0] < 0:
+                            #Giro a izquierda
+                            neighbours.append((point[0] - 1, point[1], self._action_costs[2]))
+                if d_y == 0 and d_x != 0:
+                    #Se movía en horizontal
+                    if d_x > 0:
+                        #Se movía aumentando x
+                        if new_direction[1] > 0:
+                            #Giro a izquierda
+                            neighbours.append((point[0] - 1, point[1], self._action_costs[2]))
+                        if new_direction[1] < 0:
+                            #Giro a derecha
+                            neighbours.append((point[0] - 1, point[1], self._action_costs[3]))
+                    if d_x < 0:
+                        #Se movía aumentando x
+                        if new_direction[1] > 0:
+                            #Giro a derecha
+                            neighbours.append((point[0] - 1, point[1], self._action_costs[3]))
+                        if new_direction[1] < 0:
+                            #Giro a izquierda
+                            neighbours.append((point[0] - 1, point[1], self._action_costs[2]))
+                else:
+                    neighbours.append((point[0] - 1, point[1], 1)) #FIRST STEP
+
+            new_direction = [1, 0] # LEFT
+            a = direction[0] * new_direction[0] + direction[1] * new_direction[1]
+            c = np.dot(np.asanyarray(direction), np.asanyarray(new_direction))  # -> cosine of the angle
+
+            if c == 1:
+                neighbours.append((point[0] + 1, point[1], self._action_costs[0]))  # STRAIGHT
+            elif c == -1:
+                neighbours.append((point[0] + 1, point[1], self._action_costs[1]))  # BACKWARDS
+            elif c == 0:
+                if d_x == 0 and d_y != 0:
+                    #Se movía en vertical
+                    if d_y > 0:
+                        #Se movía aumentando y
+                        if new_direction[0] > 0:
+                            #Giro a izquierda
+                            neighbours.append((point[0] + 1, point[1], self._action_costs[2]))
+                        if new_direction[0] < 0:
+                            #Giro a derecha
+                            neighbours.append((point[0] + 1, point[1], self._action_costs[3]))
+                    if d_y > 0:
+                        #Se movía disminuyendo y
+                        if new_direction[0] > 0:
+                            #Giro a derecha
+                            neighbours.append((point[0] + 1, point[1], self._action_costs[3]))
+                        if new_direction[0] < 0:
+                            #Giro a izquierda
+                            neighbours.append((point[0] + 1, point[1], self._action_costs[2]))
+                if d_y == 0 and d_x != 0:
+                    #Se movía en horizontal
+                    if d_x > 0:
+                        #Se movía aumentando x
+                        if new_direction[1] > 0:
+                            #Giro a izquierda
+                            neighbours.append((point[0] + 1, point[1], self._action_costs[2]))
+                        if new_direction[1] < 0:
+                            #Giro a derecha
+                            neighbours.append((point[0] + 1, point[1], self._action_costs[3]))
+                    if d_x < 0:
+                        #Se movía aumentando x
+                        if new_direction[1] > 0:
+                            #Giro a derecha
+                            neighbours.append((point[0] + 1, point[1], self._action_costs[3]))
+                        if new_direction[1] < 0:
+                            #Giro a izquierda
+                            neighbours.append((point[0] + 1, point[1], self._action_costs[2]))
+                else:
+                    neighbours.append((point[0] + 1, point[1], 1))  # FIRST STEP
+
+            new_direction = [0, 1] # BOTTOM
+            a = direction[0] * new_direction[0] + direction[1] * new_direction[1]
+            c = np.dot(np.asanyarray(direction), np.asanyarray(new_direction))  # -> cosine of the angle
+
+            if c == 1:
+                neighbours.append((point[0], point[1] + 1, self._action_costs[0]))  # STRAIGHT
+            elif c == -1:
+                neighbours.append((point[0], point[1] + 1, self._action_costs[1]))  # BACKWARDS
+            elif c == 0:
+                if d_x == 0 and d_y != 0:
+                    #Se movía en vertical
+                    if d_y > 0:
+                        #Se movía aumentando y
+                        if new_direction[0] > 0:
+                            #Giro a izquierda
+                            neighbours.append((point[0], point[1] + 1, self._action_costs[2]))
+                        if new_direction[0] < 0:
+                            #Giro a derecha
+                            neighbours.append((point[0], point[1] + 1, self._action_costs[3]))
+                    if d_y > 0:
+                        #Se movía disminuyendo y
+                        if new_direction[0] > 0:
+                            #Giro a derecha
+                            neighbours.append((point[0], point[1] + 1, self._action_costs[3]))
+                        if new_direction[0] < 0:
+                            #Giro a izquierda
+                            neighbours.append((point[0], point[1] + 1, self._action_costs[2]))
+                if d_y == 0 and d_x != 0:
+                    #Se movía en horizontal
+                    if d_x > 0:
+                        #Se movía aumentando x
+                        if new_direction[1] > 0:
+                            #Giro a izquierda
+                            neighbours.append((point[0], point[1] + 1, self._action_costs[2]))
+                        if new_direction[1] < 0:
+                            #Giro a derecha
+                            neighbours.append((point[0], point[1] + 1, self._action_costs[3]))
+                    if d_x < 0:
+                        #Se movía aumentando x
+                        if new_direction[1] > 0:
+                            #Giro a derecha
+                            neighbours.append((point[0], point[1] + 1, self._action_costs[3]))
+                        if new_direction[1] < 0:
+                            #Giro a izquierda
+                            neighbours.append((point[0], point[1] + 1, self._action_costs[2]))
+                else:
+                    neighbours.append((point[0], point[1] + 1, 1))  # FIRST STEP
+
+            new_direction = [0, -1] #TOP
+            a = direction[0] * new_direction[0] + direction[1] * new_direction[1]
+            c = np.dot(np.asanyarray(direction), np.asanyarray(new_direction))  # -> cosine of the angle
+
+            if c == 1:
+                neighbours.append((point[0], point[1] - 1, self._action_costs[0]))  # STRAIGHT
+            elif c == -1:
+                neighbours.append((point[0], point[1] - 1, self._action_costs[1]))  # BACKWARDS
+            elif c == 0:
+                if d_x == 0 and d_y != 0:
+                    #Se movía en vertical
+                    if d_y > 0:
+                        #Se movía aumentando y
+                        if new_direction[0] > 0:
+                            #Giro a izquierda
+                            neighbours.append((point[0], point[1] - 1, self._action_costs[2]))
+                        if new_direction[0] < 0:
+                            #Giro a derecha
+                            neighbours.append((point[0], point[1] - 1, self._action_costs[3]))
+                    if d_y > 0:
+                        #Se movía disminuyendo y
+                        if new_direction[0] > 0:
+                            #Giro a derecha
+                            neighbours.append((point[0], point[1] - 1, self._action_costs[3]))
+                        if new_direction[0] < 0:
+                            #Giro a izquierda
+                            neighbours.append((point[0], point[1] - 1, self._action_costs[2]))
+                if d_y == 0 and d_x != 0:
+                    #Se movía en horizontal
+                    if d_x > 0:
+                        #Se movía aumentando x
+                        if new_direction[1] > 0:
+                            #Giro a izquierda
+                            neighbours.append((point[0], point[1] - 1, self._action_costs[2]))
+                        if new_direction[1] < 0:
+                            #Giro a derecha
+                            neighbours.append((point[0], point[1] - 1, self._action_costs[3]))
+                    if d_x < 0:
+                        #Se movía aumentando x
+                        if new_direction[1] > 0:
+                            #Giro a derecha
+                            neighbours.append((point[0], point[1] - 1, self._action_costs[3]))
+                        if new_direction[1] < 0:
+                            #Giro a izquierda
+                            neighbours.append((point[0], point[1] - 1, self._action_costs[2]))
+                else:
+                    neighbours.append((point[0], point[1] - 1, 1))  # FIRST STEP
+
 
             for neighbour in neighbours:
                 try:
@@ -308,7 +502,7 @@ def test():
 
     start = (-4.0, -4.0)
     goal = (4.0, 4.0)
-    action_costs = (1.0, 1.0, 1.0, 1.0) #Top, Bottom, Left, Right
+    action_costs = (1.0, 1.0, 1.0, 1.0) #Straight, Back, Turn Left, Turn Right
 
     planning = Planning(m, action_costs)
     path = planning.a_star(start, goal)
