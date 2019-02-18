@@ -59,8 +59,8 @@ class Planning:
 
         i = 1
 
-        point = (start_rc[0], start_rc[1], heuristic[start_rc[0], start_rc[1]], g)
-        
+        point = (start_rc[0], start_rc[1], heuristic[start_rc[0], start_rc[1]], g) #Current point
+
         open_list = []
         closed_list = []
 
@@ -68,16 +68,16 @@ class Planning:
 
         map_rows, map_cols = np.shape(self._map.grid_map)
 
-        matrix_appended = np.full(shape = (map_rows, map_cols), fill_value = None)
+        ancestors = np.full(shape = (map_rows, map_cols), fill_value = None)
 
         reconstruct_path = []
 
-        matrix_appended[start_rc[0], start_rc[1]] = (start_rc[0], start_rc[1], g)
+        ancestors[start_rc[0], start_rc[1]] = (start_rc[0], start_rc[1], g)
 
 
         while (point[0], point[1]) != goal_rc:
-            d_x = point[0] - matrix_appended[point[0], point[1]][0]
-            d_y = point[1] - matrix_appended[point[0], point[1]][1]
+            d_x = point[0] - ancestors[point[0], point[1]][0]
+            d_y = point[1] - ancestors[point[0], point[1]][1]
             direction = [d_x,d_y]
 
             new_direction = [-1,0] #RIGHT
@@ -277,9 +277,9 @@ class Planning:
                 try:
                     if self._map.grid_map[neighbour[0], neighbour[1]] != 1 and np.sign(neighbour[0]) != -1 and np.sign(neighbour[1]) != -1 and neighbour[0] < map_rows  and neighbour [1] < map_cols:
                         g = point[3] + neighbour[2]
-                        if matrix_appended[neighbour[0], neighbour[1]] is None or matrix_appended[neighbour[0], neighbour[1]][2] > g:
+                        if ancestors[neighbour[0], neighbour[1]] is None or ancestors[neighbour[0], neighbour[1]][2] > g:
                             open_list.append((neighbour[0], neighbour[1], heuristic[neighbour[0], neighbour[1]] + g, g))
-                            matrix_appended[neighbour[0],neighbour[1]] = (point[0], point[1], g)
+                            ancestors[neighbour[0],neighbour[1]] = (point[0], point[1], g)
                 except:
                     print("Point not in map")
 
@@ -298,7 +298,7 @@ class Planning:
             del open_list[0]
 
 
-        reconstruct_path = self._reconstruct_path(start_rc, goal_rc, ancestors = matrix_appended)
+        reconstruct_path = self._reconstruct_path(start_rc, goal_rc, ancestors = ancestors)
 
         reconstruct_path.reverse()
 
