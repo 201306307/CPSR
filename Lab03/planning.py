@@ -82,9 +82,9 @@ class Planning:
 
             for neighbour in neighbours:
                 try:
-                    if self._map.grid_map[neighbour[0], neighbour[1]] != 1 and np.sign(neighbour[0]) != -1 and np.sign(neighbour[1]) != -1 and neighbour[0] < 9  and neighbour [1] < 9:
+                    if self._map.grid_map[neighbour[0], neighbour[1]] != 1 and np.sign(neighbour[0]) != -1 and np.sign(neighbour[1]) != -1 and neighbour[0] < map_rows  and neighbour [1] < map_cols:
                         g = point[3] + neighbour[2]
-                        if matrix_appended[neighbour[0], neighbour[1]] is None:
+                        if matrix_appended[neighbour[0], neighbour[1]] is None or matrix_appended[neighbour[0], neighbour[1]][2] > g:
                             open_list.append((neighbour[0], neighbour[1], heuristic[neighbour[0], neighbour[1]] + g, g))
                             matrix_appended[neighbour[0],neighbour[1]] = (point[0], point[1], g)
                 except:
