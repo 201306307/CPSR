@@ -60,8 +60,7 @@ class Planning:
         i = 1
 
         point = (start_rc[0], start_rc[1], heuristic[start_rc[0], start_rc[1]], g)
-        point_old = (start_rc[0], start_rc[1])
-
+        
         open_list = []
         closed_list = []
 
