@@ -17,7 +17,7 @@ from matplotlib import pyplot as plt
 class Planning:
     """Class to plan the optimal path to a given location."""
 
-    def __init__(self, map_object: Map, action_costs: Tuple[float, float, float, float]):
+    def __init__(self, map_object: Map, action_costs: Tuple[float, float, float, float], naive = False):
         """Planning class initializer.
 
         Args:
@@ -35,6 +35,7 @@ class Planning:
         ])
 
         self._action_costs = action_costs
+        self._naive = naive
 
     def a_star(self, start: Tuple[float, float], goal: Tuple[float, float]):
         # -> List[Tuple[float, float]], np.ndarray:
@@ -429,7 +430,10 @@ class Planning:
 
         for i in range(0, map_rows):
             for j in range (0, map_cols):
-                heuristic[i][j] = abs(goal_rc[0] - i) + abs(goal_rc[1] - j)
+                if self._naive:
+                    heuristic[i][j] = 0
+                else:
+                    heuristic[i][j] = abs(goal_rc[0] - i) + abs(goal_rc[1] - j)
 
         return heuristic
 
