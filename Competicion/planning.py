@@ -371,7 +371,7 @@ class Planning:
 
         return axes
 
-    def show(self, path, smoothed_path=(), figure_number: int = 1, title: str = 'Path', blocking: bool = False,
+    def show(self, path, smoothed_path=(), figure_number: int = 2, title: str = 'Path', blocking: bool = False,
              figure_size: Tuple[float, float] = (7, 7), save_figure: bool = False, save_dir: str = 'img'):
         """Displays a given path on the map.
 

@@ -47,9 +47,9 @@ class Navigation:
 
         k = 0.3 / error
 
-        if np.abs(integ) < 0.2:
+        if np.abs(integ) < 0.3:
             v = k * error
-            w = - 0.7 * integ
+            w = - 1 * integ
         else:
             v = 0.1 * integ
             w = - 1.6 * integ
