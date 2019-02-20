@@ -1,6 +1,8 @@
 from typing import List, Tuple
 import numpy as np
 
+import math
+
 
 from circularbuffer import CircularBuffer
 
@@ -47,9 +49,9 @@ class Navigation:
 
         k = 0.3 / error
 
-        if np.abs(integ) < 0.3:
+        if math.fabs(integ) < 0.15:
             v = k * error
-            w = - 1 * integ
+            w = - 0.3 * integ
         else:
             v = 0.1 * integ
             w = - 1.6 * integ

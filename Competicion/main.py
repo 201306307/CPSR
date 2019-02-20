@@ -10,7 +10,14 @@ from particle_filter import *
 
 from planning import *
 
+from kmeans import *
+
+from _functools import reduce
+
 import matplotlib
+
+import matplotlib.pyplot as plt
+plt.style.use('seaborn-whitegrid')
 
 
 import time
@@ -30,17 +37,17 @@ if __name__ == '__main__':
                               'simRemoteApi.start(19999)')
 
     # Write initialization code here
-    ts = 1
+    ts = 0.13
     robot = RobotP3DX(client_id)
     navigation = Navigation()
     idle = Idle(ts)
 
-    error_acumulation = CircularBuffer(4) #4 es factible, 5 y 2 no funcionan con estos parámetros
+    error_acumulation = CircularBuffer(3) #4 es factible, 5 y 2 no funcionan con estos parámetros
 
     for error in error_acumulation:
         error_acumulation.record(0)
 
-    particle_count = 1500
+    particle_count = 500
 
     m = Map('map_project.json')
     pf = ParticleFilter(m, RobotP3DX.SENSORS[:8], RobotP3DX.SENSOR_RANGE, particle_count = particle_count)
@@ -55,41 +62,69 @@ if __name__ == '__main__':
         while True:
             while found == 0:
                 # Write your control algorithm here
-                robot.move(0, 0)
+                start = time.time()
                 z = robot.sense()
                 v, w = navigation.explore(z, error_acumulation)
                 loop_time, overflow = idle.task()
+                timer = time.time() - start
+                # print("Measurements:" + str(timer))
 
-                # Move
-                start = time.time()
-                pf.move(v/2, w/2, dt)
-                move = time.time() - start
+                print("COUNT: " + str(count))
 
-                # Sense
-                if count % 3 == 0:
+                if count % 40 == 0 and count != 0 or count == 450:
+                    robot.move(0,0)
+                    pf.move(0,0,0)
                     start = time.time()
                     pf.resample(z[:8])
                     sense = time.time() - start
                     # Display timing results
                     print('Total: {0:6.3f} s     Move: {1:6.3f} s     Sense: {2:6.3f} s'.format(move + sense, move, sense))
+                    # pf.show(1, 'Move', save_figure=True)
+
+                # Move
+                if overflow is not True:
+                    start = time.time()
+                    pf.move(v / 1.6, w / 1.6, ts)
+                    robot.move(v / 1.6, w / 1.6)
+                    move = time.time() - start
+                else:
+                    robot.move(0,0)
+                    pf.move(0,0,0)
+
+                # print("Particle Move:" + str(move))
+
 
                 count += 1
 
-                pf.show(1, 'Move', save_figure=True)
-
-
-                t_end = time.time() + dt
-
-                while time.time() < t_end:
-                    robot.move(v/2, w/2)
+                start = time.time()
+                # pf.show(1, 'Move', save_figure=True)
+                show = time.time() - start
+                # print("Show" + str(show))
 
                 if overflow:
                     print('Loop time: {0:.3f} s'.format(loop_time))
 
-                if count == 20:
+                if count == 450:
+                    print("DONNEEEEEEE")
                     found = 1
-                    start = (int(pf._particles[250][0]), int(pf._particles[250][1]))
-                    print(start)
+                    points = []
+                    for i in range (0,len(pf._particles)):
+                        a = Point(pf._particles[i][:2])
+                        points.append(a)
+                    clusters, iterations = kmeans(points, 2, 0.3)
+
+                    num = 0
+                    for c in clusters:
+                        if len(c.points) > num:
+                            num = len(c.points)
+                            centroid = c.centroid
+                            print(centroid.coords)
+                            print(len(c.points))
+
+
+                    start_point = (centroid.coords[0],centroid.coords[1])
+                    print(start_point)
+
 
             while found == 1:
                 # start = (4,-4)
@@ -97,9 +132,10 @@ if __name__ == '__main__':
                 goal = (4, 4)
                 action_costs = (1.0, 1.0, 1.0, 1.0)  # Straight, Back, Turn Left, Turn Right
                 planning = Planning(m, action_costs, naive=False)
-                path = planning.a_star(start, goal)
+                path = planning.a_star(start_point, goal)
                 smoothed_path = planning.smooth_path(path, data_weight=0.8, smooth_weight=0.2)
                 planning.show(path, smoothed_path, blocking=True)
+                print(smoothed_path)
 
 
 

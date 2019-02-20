@@ -292,7 +292,7 @@ class Planning:
 
             closed_list.append(open_list[0][:2])
 
-            print("Number of steps: " + str(i))
+            # print("Number of steps: " + str(i))
 
             i += 1
 
