@@ -37,7 +37,7 @@ if __name__ == '__main__':
                               'simRemoteApi.start(19999)')
 
     # Write initialization code here
-    ts = 0.13
+    ts = 0.15
     robot = RobotP3DX(client_id)
     navigation = Navigation()
     idle = Idle(ts)
@@ -47,7 +47,7 @@ if __name__ == '__main__':
     for error in error_acumulation:
         error_acumulation.record(0)
 
-    particle_count = 500
+    particle_count = 800
 
     m = Map('map_project.json')
     pf = ParticleFilter(m, RobotP3DX.SENSORS[:8], RobotP3DX.SENSOR_RANGE, particle_count = particle_count)
@@ -57,6 +57,14 @@ if __name__ == '__main__':
     count = 0
 
     found = 0
+
+    time_giros = 40
+    time_recta = 40
+
+    counter_path = 0
+
+    counting = 0
+
 
     try:
         while True:
@@ -94,7 +102,6 @@ if __name__ == '__main__':
                 # print("Particle Move:" + str(move))
 
 
-                count += 1
 
                 start = time.time()
                 # pf.show(1, 'Move', save_figure=True)
@@ -104,14 +111,13 @@ if __name__ == '__main__':
                 if overflow:
                     print('Loop time: {0:.3f} s'.format(loop_time))
 
-                if count == 450:
-                    print("DONNEEEEEEE")
+                if count == 150:
                     found = 1
                     points = []
                     for i in range (0,len(pf._particles)):
-                        a = Point(pf._particles[i][:2])
+                        a = Point(pf._particles[i])
                         points.append(a)
-                    clusters, iterations = kmeans(points, 2, 0.3)
+                    clusters, iterations = kmeans(points, 3, 0.3)
 
                     num = 0
                     for c in clusters:
@@ -123,20 +129,40 @@ if __name__ == '__main__':
 
 
                     start_point = (centroid.coords[0],centroid.coords[1])
+                    start_angle = (centroid.coords[2])
                     print(start_point)
 
+                    robot.move(0, 0)
+                    goal = (4, 4)
+                    action_costs = (1.0, 1.0, 1.0, 1.0)  # Straight, Back, Turn Left, Turn Right
+                    planning = Planning(m, action_costs, naive=False)
+                    path = planning.a_star(start_point, goal)
+                    smoothed_path = planning.smooth_path(path, data_weight=0.8, smooth_weight=0.2)
+                    # planning.show(path, smoothed_path, blocking=True)
+                    print(smoothed_path)
+                    count = 0
+
+                count += 1
 
             while found == 1:
-                # start = (4,-4)
-                robot.move(0,0)
-                goal = (4, 4)
-                action_costs = (1.0, 1.0, 1.0, 1.0)  # Straight, Back, Turn Left, Turn Right
-                planning = Planning(m, action_costs, naive=False)
-                path = planning.a_star(start_point, goal)
-                smoothed_path = planning.smooth_path(path, data_weight=0.8, smooth_weight=0.2)
-                planning.show(path, smoothed_path, blocking=True)
-                print(smoothed_path)
+                if counting % (time_giros + time_recta) == 0:
+                    angle = math.atan((path[counter_path + 1][1] - path[counter_path][1]) / (
+                                path[counter_path + 1][0] - path[counter_path][0] + 0.001))
+                    w = angle / (time_giros * ts)
+                    distance = math.sqrt((path[counter_path + 1][1] - path[counter_path][1]) ** 2 + (
+                                path[counter_path + 1][0] - path[counter_path][0]) ** 2)
+                    v = distance / (time_recta * ts)
+                    if counter_path != len(path):
+                        counter_path += 1
+                    else:
+                        pass
+                elif counting % (time_giros + time_recta) <= time_giros:
+                    print("PENE")
+                    robot.move(0,w)
+                elif counting % (time_giros + time_recta) > time_giros:
+                    robot.move(v,0)
 
+                counting += 1
 
 
     except KeyboardInterrupt:  # Break the infinite loop to gracefully close the connection
