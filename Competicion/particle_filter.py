@@ -137,7 +137,7 @@ class ParticleFilter:
 
     def show(self, figure_number: int = 1, title: str = '', blocking: bool = False,
              figure_size: Tuple[float, float] = (7, 7), orientation: bool = True,
-             save_figure: bool = False, save_dir: str = 'img'):
+             save_figure: bool = False, save_dir: str = 'img', centroid: Tuple[float, float, float] = (0, 0, 0)):
         """Displays the current particle set on the map.
 
         Args:
@@ -148,6 +148,7 @@ class ParticleFilter:
             orientation: Draw particle orientation.
             save_figure: True to save figure to a .png file.
             save_dir: Image save directory.
+            centroid: Coordinates of guessed centroid.
 
         """
         figure = plt.figure(figure_number, figsize=figure_size)
@@ -156,6 +157,7 @@ class ParticleFilter:
         axes = figure.add_subplot(1, 1, 1)
         axes = self._map.plot(axes)
         axes = self.plot(axes, orientation)
+        axes.plot(centroid[0], centroid[1], 'ro', markersize=4)
 
         axes.set_title(title + ' (Iteration #' + str(self._iteration) + ')')
         figure.tight_layout()  # Reduce white margins
