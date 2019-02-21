@@ -509,7 +509,7 @@ def test():
 
     planning = Planning(m, action_costs, naive=False)
     path = planning.a_star(start, goal)
-    smoothed_path = planning.smooth_path(path, data_weight=0.8, smooth_weight=0.4)
+    smoothed_path = planning.smooth_path(path, data_weight=0.8, smooth_weight=0.2)
     planning.show(path, smoothed_path, blocking=True)
 
 

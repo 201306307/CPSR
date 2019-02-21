@@ -69,10 +69,10 @@ class ParticleFilter:
             # Check th in range [0, 2 pi)
             th = th % (2 * pi)
 
-            intersection, _ = self._map.check_collision([(particle[0], particle[1]), (x, y)], False)
-            if intersection:
-                x = intersection[0]
-                y = intersection[1]
+            # intersection, _ = self._map.check_collision([(particle[0], particle[1]), (x, y)], False)
+            # if intersection:
+            #     x = intersection[0]
+            #     y = intersection[1]
 
             particle[0] = x
             particle[1] = y
