@@ -158,6 +158,9 @@ class ParticleFilter:
         axes = self._map.plot(axes)
         axes = self.plot(axes, orientation)
         axes.plot(centroid[0], centroid[1], 'ro', markersize=4)
+        dx = 0.5 * math.cos(centroid[2])
+        dy = 0.5 * math.sin(centroid[2])
+        axes.arrow(centroid[0], centroid[1], dx, dy, fc='r', ec='r', lw=1)
 
         axes.set_title(title + ' (Iteration #' + str(self._iteration) + ')')
         figure.tight_layout()  # Reduce white margins
