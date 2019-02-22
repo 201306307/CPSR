@@ -13,13 +13,13 @@ class Clustering:
 
     def __init__(self, pf_object: ParticleFilter):
         self._pf = pf_object
-        self._Z = linkage(pf._particles)  # linkage matrix
+        self._Z = linkage(pf_object._particles)  # linkage matrix
         self._max_d = 1
         self._clusters = []
         self._elements = []
 
     def localize(self, max_d):
-        self._Z = linkage(pf._particles)  # linkage matrix
+        self._Z = linkage(self._pf._particles)  # linkage matrix
         self._max_d = max_d  # max_d as in max_distance
         self._clusters = fcluster(self._Z, max_d, criterion='distance')  #clusters taking into account distance
 
@@ -36,7 +36,7 @@ class Clustering:
         elements_max = max(elements)
         print('The biggest cluster has ' + str(elements_max) + ' elements.')
 
-        if elements_max > len(self._pf._particles)/1.5:
+        if elements_max > len(self._pf._particles)/1.2:
             return True
         else:
             return False

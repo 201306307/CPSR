@@ -51,10 +51,10 @@ class Navigation:
 
         if math.fabs(integ) < 0.2:
             v = k * error
-            w = - 0.6 * integ
+            w = - 0.3 * integ
         else:
             v = 0.1 * integ
-            w = - 2.5 * integ
+            w = - 1.6 * integ
 
         if ((measurements[4-1] - 1) + (measurements[5-1] - 1)) < -1.2:
             v = 0

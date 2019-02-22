@@ -12,6 +12,8 @@ from planning import *
 
 from kmeans import *
 
+from clustering import *
+
 from _functools import reduce
 
 import matplotlib
@@ -37,7 +39,7 @@ if __name__ == '__main__':
                               'simRemoteApi.start(19999)')
 
     # Write initialization code here
-    ts = 0.16
+    ts = 0.2
     robot = RobotP3DX(client_id)
     navigation = Navigation()
     idle = Idle(ts)
@@ -47,10 +49,12 @@ if __name__ == '__main__':
     for error in error_acumulation:
         error_acumulation.record(0)
 
-    particle_count = 1200
+    particle_count = 800
 
     m = Map('map_project.json')
-    pf = ParticleFilter(m, RobotP3DX.SENSORS[:8], RobotP3DX.SENSOR_RANGE, particle_count = particle_count)
+    pf = ParticleFilter(m, RobotP3DX.SENSORS[:16], RobotP3DX.SENSOR_RANGE, particle_count = particle_count)
+
+    clustering = Clustering(pf)
 
     dt = 1
 
@@ -58,8 +62,8 @@ if __name__ == '__main__':
 
     found = 0
 
-    time_giros = 20
-    time_recta = 20
+    time_giros = 10
+    time_recta = 10
 
     counter_path = 0
 
@@ -81,22 +85,22 @@ if __name__ == '__main__':
 
                 print("COUNT: " + str(count))
 
-                if count % 40 == 0 and count != 0 or count == 550 - 1:
+                if count % 10 == 0 and count != 0 or count == 550 - 1:
                     robot.move(0,0)
                     pf.move(0,0,0)
                     start = time.time()
-                    pf.resample(z[:8])
+                    pf.resample(z[:16])
                     sense = time.time() - start
                     # Display timing results
-                    print('Total: {0:6.3f} s     Move: {1:6.3f} s     Sense: {2:6.3f} s'.format(move + sense, move, sense))
+                    # print('Total: {0:6.3f} s     Move: {1:6.3f} s     Sense: {2:6.3f} s'.format(move + sense, move, sense))
                     # pf.show(1, 'Move', save_figure=True)
 
                 # Move
                 if overflow is not True:
                     start = time.time()
-                    robot.move(v / 2, w / 2)
+                    robot.move(v, w)
                     move = time.time() - start
-                    pf.move(v / 2, w / 2, ts)
+                    pf.move(v, w, ts)
                 else:
                     robot.move(0,0)
                     pf.move(0,0,0)
@@ -113,30 +117,15 @@ if __name__ == '__main__':
                 if overflow:
                     print('Loop time: {0:.3f} s'.format(loop_time))
 
-                if count == 550:
+                localized = clustering.localize(0.1)
+                coord = (0, 0, 0)
+                if localized:
+
+                    coord = clustering.coordinates()
                     found = 1
-                    points = []
-                    for i in range (0,len(pf._particles)):
-                        a = Point(pf._particles[i])
-                        points.append(a)
-                    clusters, iterations = kmeans(points, 3, 0.3)
 
-
-                    num = 0
-                    for c in clusters:
-                        print(c.centroid.coords)
-                        print(len(c.points))
-                        if len(c.points) > num:
-                            sum_angles = 0
-                            num = len(c.points)
-                            for point in c.points:
-                                sum_angles += point.coords[2]
-                            centroid = c.centroid
-                            start_angle = sum_angles/num
-
-
-
-                    start_point = (centroid.coords[0],centroid.coords[1])
+                    start_point = (coord[0],coord[1])
+                    start_angle = coord[2]
                     print("I'M AT ANGLE (deg):" + str(start_angle * 180 / 3.14))
                     # print(start_point)
 
@@ -148,12 +137,58 @@ if __name__ == '__main__':
                     smoothed_path = planning.smooth_path(path, data_weight=0.8, smooth_weight=0.1)
                     del path[0]
                     del smoothed_path[0]
-                    path.insert(0,start_point)
+                    path.insert(0, start_point)
                     smoothed_path.insert(0, start_point)
                     planning.show(path, smoothed_path, blocking=True)
                     print(path)
                     count = 0
                     angle_old = 0
+                    ts = 0.1
+                    print('The robot is localized in point ' + str(coord))
+                else:
+                    print('The robot is lost.')
+
+                # if count == 550:
+                #     found = 1
+                #     points = []
+                #     for i in range (0,len(pf._particles)):
+                #         a = Point(pf._particles[i])
+                #         points.append(a)
+                #     clusters, iterations = kmeans(points, 3, 0.3)
+                #
+                #
+                #     num = 0
+                #     for c in clusters:
+                #         print(c.centroid.coords)
+                #         print(len(c.points))
+                #         if len(c.points) > num:
+                #             sum_angles = 0
+                #             num = len(c.points)
+                #             for point in c.points:
+                #                 sum_angles += point.coords[2]
+                #             centroid = c.centroid
+                #             start_angle = sum_angles/num
+                #
+                #
+                #
+                #     start_point = (centroid.coords[0],centroid.coords[1])
+                #     print("I'M AT ANGLE (deg):" + str(start_angle * 180 / 3.14))
+                #     # print(start_point)
+                #
+                #     robot.move(0, 0)
+                #     goal = (4, 4)
+                #     action_costs = (1.0, 100.0, 1.0, 1.0)  # Straight, Back, Turn Left, Turn Right
+                #     planning = Planning(m, action_costs, naive=False)
+                #     path = planning.a_star(start_point, goal)
+                #     smoothed_path = planning.smooth_path(path, data_weight=0.8, smooth_weight=0.1)
+                #     del path[0]
+                #     del smoothed_path[0]
+                #     path.insert(0,start_point)
+                #     smoothed_path.insert(0, start_point)
+                #     planning.show(path, smoothed_path, blocking=True)
+                #     print(path)
+                #     count = 0
+                #     angle_old = 0
 
                 count += 1
                 control = 0
