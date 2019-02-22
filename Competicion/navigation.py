@@ -49,15 +49,58 @@ class Navigation:
 
         k = 0.3 / error
 
-        if math.fabs(integ) < 0.15:
+        if math.fabs(integ) < 0.2:
             v = k * error
-            w = - 0.3 * integ
+            w = - 0.6 * integ
         else:
             v = 0.1 * integ
-            w = - 1.6 * integ
+            w = - 2.5 * integ
 
-        if ((measurements[4-1] - 1) + (measurements[5-1] - 1)) < -1.4:
+        if ((measurements[4-1] - 1) + (measurements[5-1] - 1)) < -1.2:
             v = 0
             w = -1
+
+        return v, w
+
+
+    def explore2(self, measurements: List[float], error_acumulation) -> Tuple[float, float]:
+        """Wall following exploration algorithm.
+
+        Args:
+            measurements: Distance from every sensor to the closest obstacle [m].
+
+        Returns:
+            v: Linear velocity [m/s].
+            w: Angular velocity [rad/s].
+
+        """
+        # TODO: Compute v and w with your algorithm
+        #PONGO MENOS 1 PORQUE EL SENSOR 1 ESTA EN LA POSICION 0, EL 2 EN LA 1 ETC
+
+        if ((measurements[1-1] > 0.9 and measurements[2-1] > 0.9) and (measurements[7-1] < 0.8 and measurements[8-1] < 0.8) and measurements[4-1] > 0.9 and measurements[5-1] > 0.9):
+            error = 2 * ((measurements[6-1]) + (measurements[7-1]) + (measurements[8-1]) - 0.45 - 0.45 - 0.5)
+            print("Lado izquierdo vacío")
+        elif ((measurements[7 - 1] > 0.9 and measurements[8 - 1] > 0.9) and (measurements[1-1] < 0.8 and measurements[2-1] < 0.8) and measurements[4-1] > 0.9 and measurements[5-1] > 0.9):
+            error = -2 * ((measurements[1 - 1]) + (measurements[2 - 1]) + (measurements[3 - 1]) - 0.45 - 0.45 - 0.5)
+            print("Lado derecho vacío")
+        else:
+            error = - 1 * (measurements[1-1]) - (measurements[2-1]) - (measurements[3-1]) + (measurements[6-1]) + (measurements[7-1]) + (measurements[8-1]) #La mayor parte del tiempo
+
+        error_acumulation.record(error) #Error acumulation es un buffer circular
+
+        # print(str(measurements[1-1]) + "," + str(measurements[2-1]) + "," + str(measurements[3-1]) + "," + str(measurements[4-1]) + "," + str(measurements[5-1]) + "," + str(measurements[6-1]) + "," + str(measurements[7-1]) + "," + str(measurements[8-1]))
+
+        der = (error - error_acumulation.__getitem__(error_acumulation._index - 2)) / 0.05
+
+        integ = sum(error_acumulation.get_all()) * 0.05
+
+        k = 0.3 / error
+
+        if math.fabs(integ) < 0.1:
+            v = k * error
+            w = - 0.4 * integ
+        else:
+            v = 0
+            w = - 2 * integ
 
         return v, w
