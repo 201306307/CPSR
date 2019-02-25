@@ -14,7 +14,7 @@ class Clustering:
     def __init__(self, pf_object: ParticleFilter):
         self._pf = pf_object
         self._Z = linkage(pf_object._particles)  # linkage matrix
-        self._max_d = 1
+        self._max_d = 2
         self._clusters = []
         self._elements = []
 
@@ -36,7 +36,7 @@ class Clustering:
         elements_max = max(elements)
         print('The biggest cluster has ' + str(elements_max) + ' elements.')
 
-        if elements_max > len(self._pf._particles)/1.2:
+        if elements_max > len(self._pf._particles)/1.1:
             return True
         else:
             return False

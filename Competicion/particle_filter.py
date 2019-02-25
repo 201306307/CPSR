@@ -22,7 +22,7 @@ class ParticleFilter:
     """Particle filter implementation."""
 
     def __init__(self, map_object: Map, sensors: List[Tuple[float, float, float]], sensor_range: float,
-                 particle_count: int = 100, sense_noise: float = 0.5, v_noise: float = 0.05, w_noise: float = 0.05):
+                 particle_count: int = 100, sense_noise: float = 0.5, v_noise: float = 0.03, w_noise: float = 0.03):
         """Particle filter class initializer.
 
         Args:
@@ -69,10 +69,10 @@ class ParticleFilter:
             # Check th in range [0, 2 pi)
             th = th % (2 * pi)
 
-            # intersection, _ = self._map.check_collision([(particle[0], particle[1]), (x, y)], False)
-            # if intersection:
-            #     x = intersection[0]
-            #     y = intersection[1]
+            intersection, _ = self._map.check_collision([(particle[0], particle[1]), (x, y)], False)
+            if intersection:
+                x = intersection[0]
+                y = intersection[1]
 
             particle[0] = x
             particle[1] = y

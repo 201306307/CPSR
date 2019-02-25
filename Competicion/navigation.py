@@ -32,10 +32,10 @@ class Navigation:
 
         if ((measurements[1-1] > 0.9 and measurements[2-1] > 0.9) and (measurements[7-1] < 0.8 and measurements[8-1] < 0.8) and measurements[4-1] > 0.9 and measurements[5-1] > 0.9):
             error = 2 * ((measurements[6-1]) + (measurements[7-1]) + (measurements[8-1]) - 0.45 - 0.45 - 0.5)
-            print("Lado izquierdo vacío")
+            # print("Lado izquierdo vacío")
         elif ((measurements[7 - 1] > 0.9 and measurements[8 - 1] > 0.9) and (measurements[1-1] < 0.8 and measurements[2-1] < 0.8) and measurements[4-1] > 0.9 and measurements[5-1] > 0.9):
             error = -2 * ((measurements[1 - 1]) + (measurements[2 - 1]) + (measurements[3 - 1]) - 0.45 - 0.45 - 0.5)
-            print("Lado derecho vacío")
+            # print("Lado derecho vacío")
         else:
             error = - 1 * (measurements[1-1]) - (measurements[2-1]) - (measurements[3-1]) + (measurements[6-1]) + (measurements[7-1]) + (measurements[8-1]) #La mayor parte del tiempo
 
@@ -47,18 +47,17 @@ class Navigation:
 
         integ = sum(error_acumulation.get_all()) * 0.05
 
-        k = 0.3 / error
 
         if math.fabs(integ) < 0.2:
-            v = k * error
-            w = - 0.3 * integ
+            v = 0.3
+            w = - 0.5 * integ
         else:
             v = 0.1 * integ
-            w = - 1.6 * integ
+            w = - 2 * integ
 
         if ((measurements[4-1] - 1) + (measurements[5-1] - 1)) < -1.2:
             v = 0
-            w = -1
+            w = -0.7
 
         return v, w
 
@@ -94,13 +93,10 @@ class Navigation:
 
         integ = sum(error_acumulation.get_all()) * 0.05
 
-        k = 0.3 / error
+        v = 0.3
+        w = - 1.2 * integ
 
-        if math.fabs(integ) < 0.1:
-            v = k * error
-            w = - 0.2 * integ
-        else:
-            v = 0
+        if w > 1:
             w = 0
 
         return v, w
