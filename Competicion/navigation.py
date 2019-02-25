@@ -98,9 +98,9 @@ class Navigation:
 
         if math.fabs(integ) < 0.1:
             v = k * error
-            w = - 0.4 * integ
+            w = - 0.2 * integ
         else:
             v = 0
-            w = - 2 * integ
+            w = 0
 
         return v, w

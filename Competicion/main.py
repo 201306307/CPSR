@@ -49,7 +49,7 @@ if __name__ == '__main__':
     for error in error_acumulation:
         error_acumulation.record(0)
 
-    particle_count = 800
+    particle_count = 1000
 
     m = Map('map_project.json')
     pf = ParticleFilter(m, RobotP3DX.SENSORS[:16], RobotP3DX.SENSOR_RANGE, particle_count = particle_count)
@@ -62,8 +62,8 @@ if __name__ == '__main__':
 
     found = 0
 
-    time_giros = 10
-    time_recta = 10
+    time_giros = 20
+    time_recta = 20
 
     counter_path = 0
 
@@ -85,7 +85,7 @@ if __name__ == '__main__':
 
                 print("COUNT: " + str(count))
 
-                if count % 10 == 0 and count != 0 or count == 550 - 1:
+                if count % 25 == 0 and count != 0 or count == 400 - 1:
                     robot.move(0,0)
                     pf.move(0,0,0)
                     start = time.time()
@@ -98,34 +98,42 @@ if __name__ == '__main__':
                 # Move
                 if overflow is not True:
                     start = time.time()
-                    robot.move(v, w)
+                    robot.move(v / 1.5, w / 1.5)
                     move = time.time() - start
-                    pf.move(v, w, ts)
+                    pf.move(v / 1.5, w / 1.5, ts)
                 else:
                     robot.move(0,0)
                     pf.move(0,0,0)
 
-                # print("Particle Move:" + str(move))
-
-
-
-                start = time.time()
-                # pf.show(1, 'Move', save_figure=True)
-                show = time.time() - start
-                # print("Show" + str(show))
 
                 if overflow:
                     print('Loop time: {0:.3f} s'.format(loop_time))
 
-                localized = clustering.localize(0.1)
-                coord = (0, 0, 0)
-                if localized:
 
-                    coord = clustering.coordinates()
+                if count == 400:
                     found = 1
+                    points = []
+                    for i in range (0,len(pf._particles)):
+                        a = Point(pf._particles[i])
+                        points.append(a)
+                    clusters, iterations = kmeans(points, 3, 0.3)
 
-                    start_point = (coord[0],coord[1])
-                    start_angle = coord[2]
+
+                    num = 0
+                    for c in clusters:
+                        print(c.centroid.coords)
+                        print(len(c.points))
+                        if len(c.points) > num:
+                            sum_angles = 0
+                            num = len(c.points)
+                            for point in c.points:
+                                sum_angles += point.coords[2]
+                            centroid = c.centroid
+                            start_angle = sum_angles/num
+
+
+
+                    start_point = (centroid.coords[0],centroid.coords[1])
                     print("I'M AT ANGLE (deg):" + str(start_angle * 180 / 3.14))
                     # print(start_point)
 
@@ -137,58 +145,12 @@ if __name__ == '__main__':
                     smoothed_path = planning.smooth_path(path, data_weight=0.8, smooth_weight=0.1)
                     del path[0]
                     del smoothed_path[0]
-                    path.insert(0, start_point)
+                    path.insert(0,start_point)
                     smoothed_path.insert(0, start_point)
                     planning.show(path, smoothed_path, blocking=True)
                     print(path)
                     count = 0
                     angle_old = 0
-                    ts = 0.1
-                    print('The robot is localized in point ' + str(coord))
-                else:
-                    print('The robot is lost.')
-
-                # if count == 550:
-                #     found = 1
-                #     points = []
-                #     for i in range (0,len(pf._particles)):
-                #         a = Point(pf._particles[i])
-                #         points.append(a)
-                #     clusters, iterations = kmeans(points, 3, 0.3)
-                #
-                #
-                #     num = 0
-                #     for c in clusters:
-                #         print(c.centroid.coords)
-                #         print(len(c.points))
-                #         if len(c.points) > num:
-                #             sum_angles = 0
-                #             num = len(c.points)
-                #             for point in c.points:
-                #                 sum_angles += point.coords[2]
-                #             centroid = c.centroid
-                #             start_angle = sum_angles/num
-                #
-                #
-                #
-                #     start_point = (centroid.coords[0],centroid.coords[1])
-                #     print("I'M AT ANGLE (deg):" + str(start_angle * 180 / 3.14))
-                #     # print(start_point)
-                #
-                #     robot.move(0, 0)
-                #     goal = (4, 4)
-                #     action_costs = (1.0, 100.0, 1.0, 1.0)  # Straight, Back, Turn Left, Turn Right
-                #     planning = Planning(m, action_costs, naive=False)
-                #     path = planning.a_star(start_point, goal)
-                #     smoothed_path = planning.smooth_path(path, data_weight=0.8, smooth_weight=0.1)
-                #     del path[0]
-                #     del smoothed_path[0]
-                #     path.insert(0,start_point)
-                #     smoothed_path.insert(0, start_point)
-                #     planning.show(path, smoothed_path, blocking=True)
-                #     print(path)
-                #     count = 0
-                #     angle_old = 0
 
                 count += 1
                 control = 0
@@ -221,11 +183,15 @@ if __name__ == '__main__':
                     else:
                         pass
                 elif counting % (time_giros + time_recta) <= time_giros:
-                    robot.move(0,w)
+                    if w > 0.001:
+                        robot.move(0,w)
+                    else:
+                        counting += time_giros / 4
                 elif counting % (time_giros + time_recta) > time_giros:
                     z = robot.sense()
-                    _, w = navigation.explore(z, error_acumulation)
-                    robot.move(v,w)
+                    _, w = navigation.explore2(z, error_acumulation)
+                    if counter_path != 0:
+                        robot.move(v,w)
 
                 counting += 1
 
