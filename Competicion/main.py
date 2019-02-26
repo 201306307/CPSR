@@ -49,7 +49,7 @@ if __name__ == '__main__':
     for error in error_acumulation:
         error_acumulation.record(0)
 
-    particle_count = 1000
+    particle_count = 950
 
     m = Map('map_project.json')
     pf = ParticleFilter(m, RobotP3DX.SENSORS[:16], RobotP3DX.SENSOR_RANGE, particle_count = particle_count)
@@ -62,8 +62,8 @@ if __name__ == '__main__':
 
     found = 0
 
-    time_giros = 20
-    time_recta = 15
+    time_giros = 25
+    time_recta = 20
 
     counter_path = 0
 
@@ -95,7 +95,7 @@ if __name__ == '__main__':
                     sense = time.time() - start
                     # Display timing results
                     # print('Total: {0:6.3f} s     Move: {1:6.3f} s     Sense: {2:6.3f} s'.format(move + sense, move, sense))
-                    # pf.show(1, 'Move', save_figure=True)
+                    pf.show(1, 'Move', save_figure=True)
                     localized = clustering.localize(0.1)
                     coord = (0, 0, 0)
 
@@ -205,7 +205,8 @@ if __name__ == '__main__':
                         # print("ANGLE:" + str(angle))
                         # print("OLD ANGLE:" + str(angle_old))
                         if counter_path == 0:
-                            w = (angle - start_angle) / (time_giros * ts)
+                            angle_turn = (angle - start_angle)
+                            w = angle_turn / (time_giros * ts) * 0.95
                             print("ANGLE TURN:" + str(angle - start_angle))
                         else:
                             angle_turn = (angle - angle_old)
@@ -217,22 +218,26 @@ if __name__ == '__main__':
                             print("ANGLE TURN:" + str(angle - angle_old))
                         distance = math.sqrt((path[counter_path + 1][1] - path[counter_path][1]) ** 2 + (
                                 path[counter_path + 1][0] - path[counter_path][0]) ** 2)
-                        v = distance / (time_recta * ts) * 1.05
+                        v = distance / (time_recta * ts)
                         print("DISTANCIA:" + str(distance))
                         # print(path[counter_path])
                         counter_path += 1
                         angle_old = angle
                 elif counting % (time_giros + time_recta) <= time_giros:
-                    # if w > 0.0001:
-                    #     robot.move(0,w)
-                    # else:
-                    #     counting += int(time_giros / 20)
-                    robot.move(0,w)
+                    if angle_turn != 0:
+                        robot.move(0,w)
+                    else:
+                        counting += 3
                 elif counting % (time_giros + time_recta) > time_giros and counting > time_giros:
                     z = robot.sense()
                     _, w = navigation.explore2(z, error_acumulation)
-                    robot.move(v,w)
-
+                    if ((z[4 - 1] - 1) + (z[5 - 1] - 1)) < -1.6:
+                        robot.move(0,0)
+                    else:
+                        if w > 0.01:
+                            robot.move(v * 1.3, w)
+                        else:
+                            robot.move(v * 1.15, w)
                 counting += 1
 
 

@@ -48,16 +48,16 @@ class Navigation:
         integ = sum(error_acumulation.get_all()) * 0.05
 
 
-        if math.fabs(integ) < 0.2:
+        if math.fabs(integ) < 0.15:
             v = 0.3
-            w = - 0.5 * integ
+            w = - 0.8 * integ
         else:
             v = 0.1 * integ
-            w = - 2 * integ
+            w = - 3 * integ
 
-        if ((measurements[4-1] - 1) + (measurements[5-1] - 1)) < -1.2:
+        if ((measurements[4-1] - 1) + (measurements[5-1] - 1)) < -1.2 or (measurements[4] - 1)< -0.7 or (measurements[5-1] - 1) < -0.7:
             v = 0
-            w = -0.7
+            w = -1
 
         return v, w
 
@@ -94,9 +94,12 @@ class Navigation:
         integ = sum(error_acumulation.get_all()) * 0.05
 
         v = 0.3
-        w = - 1.2 * integ
+        w = - 0.7 * integ
 
         if w > 1:
             w = 0
+
+        if ((measurements[4 - 1] - 1) + (measurements[5 - 1] - 1)) < -1.8:
+            v = 0
 
         return v, w
