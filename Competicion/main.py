@@ -95,9 +95,12 @@ if __name__ == '__main__':
                     sense = time.time() - start
                     # Display timing results
                     # print('Total: {0:6.3f} s     Move: {1:6.3f} s     Sense: {2:6.3f} s'.format(move + sense, move, sense))
-                    pf.show(1, 'Move', save_figure=True)
                     localized = clustering.localize(0.1)
                     coord = (0, 0, 0)
+
+                if count % 100 == 0 and count != 0:
+                    pf.show(1, 'Move', save_figure=True)
+
 
                 # Move
                 if overflow is not True:
@@ -206,7 +209,11 @@ if __name__ == '__main__':
                         # print("OLD ANGLE:" + str(angle_old))
                         if counter_path == 0:
                             angle_turn = (angle - start_angle)
-                            w = angle_turn / (time_giros * ts) * 0.95
+                            if angle_turn > 4:
+                                angle_turn = 2 * 3.14 - angle_turn
+                            if angle_turn < -4:
+                                angle_turn = -2 * 3.14 + angle_turn
+                            w = angle_turn / (time_giros * ts)
                             print("ANGLE TURN:" + str(angle - start_angle))
                         else:
                             angle_turn = (angle - angle_old)
@@ -214,7 +221,7 @@ if __name__ == '__main__':
                                 angle_turn = 2 * 3.14 - angle_turn
                             if angle_turn < -4:
                                 angle_turn = -2 * 3.14 + angle_turn
-                            w = angle_turn / (time_giros * ts) * 0.95
+                            w = angle_turn / (time_giros * ts) * 0.9
                             print("ANGLE TURN:" + str(angle - angle_old))
                         distance = math.sqrt((path[counter_path + 1][1] - path[counter_path][1]) ** 2 + (
                                 path[counter_path + 1][0] - path[counter_path][0]) ** 2)
@@ -227,17 +234,17 @@ if __name__ == '__main__':
                     if angle_turn != 0:
                         robot.move(0,w)
                     else:
-                        counting += 3
+                        counting += 4
                 elif counting % (time_giros + time_recta) > time_giros and counting > time_giros:
                     z = robot.sense()
                     _, w = navigation.explore2(z, error_acumulation)
-                    if ((z[4 - 1] - 1) + (z[5 - 1] - 1)) < -1.6:
+                    if ((z[4 - 1] - 1) + (z[5 - 1] - 1)) < -1.3:
                         robot.move(0,0)
                     else:
-                        if w > 0.01:
-                            robot.move(v * 1.3, w)
+                        if w > 0.1:
+                            robot.move(v * 1.25, w)
                         else:
-                            robot.move(v * 1.15, w)
+                            robot.move(v * 1.1, w)
                 counting += 1
 
 
